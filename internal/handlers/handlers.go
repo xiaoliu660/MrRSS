@@ -30,6 +30,17 @@ func NewHandler(db *database.DB, fetcher *feed.Fetcher) *Handler {
 }
 
 func (h *Handler) StartBackgroundScheduler(ctx context.Context) {
+	// Run initial cleanup
+	go func() {
+		log.Println("Running initial article cleanup...")
+		count, err := h.DB.CleanupOldArticles()
+		if err != nil {
+			log.Printf("Error during initial cleanup: %v", err)
+		} else {
+			log.Printf("Initial cleanup: removed %d old articles", count)
+		}
+	}()
+	
 	for {
 		intervalStr, err := h.DB.GetSetting("update_interval")
 		interval := 10
@@ -47,6 +58,15 @@ func (h *Handler) StartBackgroundScheduler(ctx context.Context) {
 			return
 		case <-time.After(time.Duration(interval) * time.Minute):
 			h.Fetcher.FetchAll(ctx)
+			// Run cleanup after fetching new articles
+			go func() {
+				count, err := h.DB.CleanupOldArticles()
+				if err != nil {
+					log.Printf("Error during automatic cleanup: %v", err)
+				} else if count > 0 {
+					log.Printf("Automatic cleanup: removed %d old articles", count)
+				}
+			}()
 		}
 	}
 }
@@ -281,4 +301,23 @@ func (h *Handler) HandleSettings(w http.ResponseWriter, r *http.Request) {
 
 		w.WriteHeader(http.StatusOK)
 	}
+}
+
+func (h *Handler) HandleCleanupArticles(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	count, err := h.DB.CleanupUnimportantArticles()
+	if err != nil {
+		log.Printf("Error cleaning up articles: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	
+	log.Printf("Cleaned up %d articles", count)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"deleted": count,
+	})
 }

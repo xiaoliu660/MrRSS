@@ -139,6 +139,24 @@ function editFeed(feed) {
     window.dispatchEvent(new CustomEvent('show-edit-feed', { detail: feed }));
 }
 
+async function cleanupDatabase() {
+    if (!confirm('This will delete all articles except read and favorited ones. Continue?')) return;
+    
+    try {
+        const res = await fetch('/api/articles/cleanup', { method: 'POST' });
+        if (res.ok) {
+            const result = await res.json();
+            alert(`Database cleaned up successfully. ${result.deleted} articles deleted.`);
+            store.fetchArticles();
+        } else {
+            alert('Error cleaning up database');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error cleaning up database');
+    }
+}
+
 </script>
 
 <template>
@@ -159,13 +177,9 @@ function editFeed(feed) {
                 <div v-if="activeTab === 'general'" class="space-y-6">
                     <div class="setting-group">
                         <label class="block font-semibold mb-3 text-text-secondary uppercase text-xs tracking-wider">Appearance</label>
-                        <div class="flex justify-between items-center mb-3">
+                        <div class="flex justify-between items-center">
                             <span>Dark Mode</span>
                             <input type="checkbox" :checked="store.theme === 'dark'" @change="store.toggleTheme()" class="toggle">
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span>Show Summaries</span>
-                            <input type="checkbox" v-model="store.showSummaries" @change="localStorage.setItem('showSummaries', store.showSummaries)" class="toggle">
                         </div>
                     </div>
 
@@ -211,7 +225,7 @@ function editFeed(feed) {
                 <div v-if="activeTab === 'feeds'" class="space-y-6">
                     <div class="setting-group">
                         <label class="block font-semibold mb-3 text-text-secondary uppercase text-xs tracking-wider">Data Management</label>
-                        <div class="flex gap-3">
+                        <div class="flex gap-3 mb-3">
                             <button @click="$refs.opmlInput.click()" class="btn-secondary flex-1 justify-center">
                                 <i class="ph ph-upload"></i> Import OPML
                             </button>
@@ -220,6 +234,14 @@ function editFeed(feed) {
                                 <i class="ph ph-download"></i> Export OPML
                             </button>
                         </div>
+                        <div class="flex gap-3">
+                            <button @click="cleanupDatabase" class="btn-secondary flex-1 justify-center text-orange-600 hover:bg-orange-50 border-orange-300">
+                                <i class="ph ph-broom"></i> Clean Database
+                            </button>
+                        </div>
+                        <p class="text-xs text-text-secondary mt-2">
+                            Removes all articles except read and favorited ones. Old articles (>1 week) are also automatically cleaned.
+                        </p>
                     </div>
                     
                     <div class="setting-group">

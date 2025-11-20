@@ -11,7 +11,6 @@ export const store = reactive({
     page: 1,
     hasMore: true,
     searchQuery: '',
-    showSummaries: localStorage.getItem('showSummaries') === 'true',
     theme: localStorage.getItem('theme') || 'light',
     
     // Actions

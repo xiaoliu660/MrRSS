@@ -22,16 +22,22 @@ type DB struct {
 func NewDB(dataSourceName string) (*DB, error) {
 	// Add busy_timeout to prevent "database is locked" errors
 	// Also enable WAL mode for better concurrency
+	// Add performance optimizations: increase cache size, set synchronous=NORMAL
 	if !strings.Contains(dataSourceName, "?") {
-		dataSourceName += "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
+		dataSourceName += "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=cache_size(-32000)&_pragma=synchronous(NORMAL)"
 	} else {
-		dataSourceName += "&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)"
+		dataSourceName += "&_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=cache_size(-32000)&_pragma=synchronous(NORMAL)"
 	}
 
 	db, err := sql.Open("sqlite", dataSourceName)
 	if err != nil {
 		return nil, err
 	}
+
+	// Set connection pool limits for better performance
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
 
 	return &DB{
 		DB:    db,
@@ -52,8 +58,21 @@ func (db *DB) Init() error {
 			return
 		}
 
-		// Helper function to add column safely
-		addColumn := func(table, column, definition string) {
+		// Create schema_version table for tracking migrations
+		_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS schema_version (
+			version INTEGER PRIMARY KEY,
+			applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		)`)
+
+		// Get current schema version
+		var version int
+		_ = db.QueryRow("SELECT COALESCE(MAX(version), 0) FROM schema_version").Scan(&version)
+
+		// Helper function to add column safely (only if migration not applied)
+		addColumn := func(migrationVersion int, table, column, definition string) {
+			if version >= migrationVersion {
+				return
+			}
 			// Check if column exists
 			query := "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name=?"
 			var count int
@@ -63,28 +82,91 @@ func (db *DB) Init() error {
 			}
 		}
 
-		// Migration: Add category column if not exists
-		addColumn("feeds", "category", "TEXT DEFAULT ''")
-		// Migration: Add image_url to feeds
-		addColumn("feeds", "image_url", "TEXT DEFAULT ''")
-		// Migration: Add summary and image_url to articles
-		addColumn("articles", "summary", "TEXT DEFAULT ''")
-		addColumn("articles", "image_url", "TEXT DEFAULT ''")
-		// Migration: Add translated_title to articles
-		addColumn("articles", "translated_title", "TEXT DEFAULT ''")
+		// Migration v1: Add category column if not exists
+		addColumn(1, "feeds", "category", "TEXT DEFAULT ''")
+		// Migration v2: Add image_url to feeds
+		addColumn(2, "feeds", "image_url", "TEXT DEFAULT ''")
+		// Migration v3: Add image_url to articles (summary removed in v6, so don't add it)
+		addColumn(3, "articles", "image_url", "TEXT DEFAULT ''")
+		// Migration v4: Add translated_title to articles
+		addColumn(4, "articles", "translated_title", "TEXT DEFAULT ''")
 
-		// Migration: Create settings table
-		_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS settings (
-			key TEXT PRIMARY KEY,
-			value TEXT
-		)`)
-		// Default settings
-		_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('update_interval', '10')`)
-		// Default settings for translation
-		_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('translation_enabled', 'false')`)
-		_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('target_language', 'es')`)
-		_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('translation_provider', 'google')`)
-		_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('deepl_api_key', '')`)
+		// Mark migrations as applied if needed
+		if version < 4 {
+			_, _ = db.Exec("INSERT OR IGNORE INTO schema_version (version) VALUES (4)")
+		}
+
+		// Migration: Create settings table (v5)
+		if version < 5 {
+			_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS settings (
+				key TEXT PRIMARY KEY,
+				value TEXT
+			)`)
+			// Default settings
+			_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('update_interval', '10')`)
+			// Default settings for translation
+			_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('translation_enabled', 'false')`)
+			_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('target_language', 'es')`)
+			_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('translation_provider', 'google')`)
+			_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('deepl_api_key', '')`)
+			_, _ = db.Exec("INSERT OR IGNORE INTO schema_version (version) VALUES (5)")
+		}
+
+		// Migration v6: Drop content and summary columns to reduce database size
+		if version < 6 {
+			// Check if columns exist before attempting to drop them
+			var contentCount, summaryCount int
+			_ = db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('articles') WHERE name='content'").Scan(&contentCount)
+			_ = db.QueryRow("SELECT COUNT(*) FROM pragma_table_info('articles') WHERE name='summary'").Scan(&summaryCount)
+			
+			if contentCount > 0 || summaryCount > 0 {
+				// SQLite doesn't support DROP COLUMN directly in older versions
+				// We need to recreate the table
+				log.Println("Migrating database schema: removing content and summary columns...")
+				
+				// Create new table without content and summary
+				_, _ = db.Exec(`CREATE TABLE IF NOT EXISTS articles_new (
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					feed_id INTEGER,
+					title TEXT,
+					url TEXT UNIQUE,
+					image_url TEXT,
+					translated_title TEXT,
+					published_at DATETIME,
+					is_read BOOLEAN DEFAULT 0,
+					is_favorite BOOLEAN DEFAULT 0,
+					FOREIGN KEY(feed_id) REFERENCES feeds(id)
+				)`)
+				
+				// Copy data from old table to new table
+				_, _ = db.Exec(`INSERT OR IGNORE INTO articles_new (id, feed_id, title, url, image_url, translated_title, published_at, is_read, is_favorite)
+					SELECT id, feed_id, title, url, image_url, translated_title, published_at, is_read, is_favorite FROM articles`)
+				
+				// Drop old table
+				_, _ = db.Exec(`DROP TABLE articles`)
+				
+				// Rename new table
+				_, _ = db.Exec(`ALTER TABLE articles_new RENAME TO articles`)
+				
+				// Recreate indexes
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_feed_id ON articles(feed_id)`)
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_published_at ON articles(published_at DESC)`)
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_is_read ON articles(is_read)`)
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_is_favorite ON articles(is_favorite)`)
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_feed_published ON articles(feed_id, published_at DESC)`)
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_read_published ON articles(is_read, published_at DESC)`)
+				_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_articles_fav_published ON articles(is_favorite, published_at DESC)`)
+				
+				log.Println("Migration complete: content and summary columns removed")
+				
+				// Run VACUUM to reclaim space
+				log.Println("Running VACUUM to reclaim database space...")
+				_, _ = db.Exec(`VACUUM`)
+				log.Println("VACUUM complete")
+			}
+			
+			_, _ = db.Exec("INSERT OR IGNORE INTO schema_version (version) VALUES (6)")
+		}
 	})
 	return err
 }
@@ -110,8 +192,6 @@ func initSchema(db *sql.DB) error {
 		feed_id INTEGER,
 		title TEXT,
 		url TEXT UNIQUE,
-		content TEXT,
-		summary TEXT,
 		image_url TEXT,
 		translated_title TEXT,
 		published_at DATETIME,
@@ -119,6 +199,18 @@ func initSchema(db *sql.DB) error {
 		is_favorite BOOLEAN DEFAULT 0,
 		FOREIGN KEY(feed_id) REFERENCES feeds(id)
 	);
+
+	-- Create indexes for better query performance
+	CREATE INDEX IF NOT EXISTS idx_articles_feed_id ON articles(feed_id);
+	CREATE INDEX IF NOT EXISTS idx_articles_published_at ON articles(published_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_articles_is_read ON articles(is_read);
+	CREATE INDEX IF NOT EXISTS idx_articles_is_favorite ON articles(is_favorite);
+	CREATE INDEX IF NOT EXISTS idx_feeds_category ON feeds(category);
+	
+	-- Composite indexes for common query patterns
+	CREATE INDEX IF NOT EXISTS idx_articles_feed_published ON articles(feed_id, published_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_articles_read_published ON articles(is_read, published_at DESC);
+	CREATE INDEX IF NOT EXISTS idx_articles_fav_published ON articles(is_favorite, published_at DESC);
 	`
 	_, err := db.Exec(query)
 	return err
@@ -166,8 +258,8 @@ func (db *DB) GetFeeds() ([]models.Feed, error) {
 
 func (db *DB) SaveArticle(article *models.Article) error {
 	db.WaitForReady()
-	query := `INSERT OR IGNORE INTO articles (feed_id, title, url, content, summary, image_url, published_at, translated_title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-	_, err := db.Exec(query, article.FeedID, article.Title, article.URL, article.Content, article.Summary, article.ImageURL, article.PublishedAt, article.TranslatedTitle)
+	query := `INSERT OR IGNORE INTO articles (feed_id, title, url, image_url, published_at, translated_title, is_read, is_favorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+	_, err := db.Exec(query, article.FeedID, article.Title, article.URL, article.ImageURL, article.PublishedAt, article.TranslatedTitle, article.IsRead, article.IsFavorite)
 	return err
 }
 
@@ -179,7 +271,7 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 	}
 	defer tx.Rollback()
 
-	stmt, err := tx.PrepareContext(ctx, `INSERT OR IGNORE INTO articles (feed_id, title, url, content, summary, image_url, published_at, translated_title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+	stmt, err := tx.PrepareContext(ctx, `INSERT OR IGNORE INTO articles (feed_id, title, url, image_url, published_at, translated_title, is_read, is_favorite) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
@@ -193,7 +285,7 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 		default:
 		}
 
-		_, err := stmt.ExecContext(ctx, article.FeedID, article.Title, article.URL, article.Content, article.Summary, article.ImageURL, article.PublishedAt, article.TranslatedTitle)
+		_, err := stmt.ExecContext(ctx, article.FeedID, article.Title, article.URL, article.ImageURL, article.PublishedAt, article.TranslatedTitle, article.IsRead, article.IsFavorite)
 		if err != nil {
 			log.Println("Error saving article in batch:", err)
 			// Continue even if one fails
@@ -206,7 +298,7 @@ func (db *DB) SaveArticles(ctx context.Context, articles []*models.Article) erro
 func (db *DB) GetArticles(filter string, feedID int64, category string, limit, offset int) ([]models.Article, error) {
 	db.WaitForReady()
 	baseQuery := `
-		SELECT a.id, a.feed_id, a.title, a.url, a.content, a.summary, a.image_url, a.published_at, a.is_read, a.is_favorite, a.translated_title, f.title 
+		SELECT a.id, a.feed_id, a.title, a.url, a.image_url, a.published_at, a.is_read, a.is_favorite, a.translated_title, f.title 
 		FROM articles a 
 		JOIN feeds f ON a.feed_id = f.id 
 	`
@@ -249,12 +341,11 @@ func (db *DB) GetArticles(filter string, feedID int64, category string, limit, o
 	var articles []models.Article
 	for rows.Next() {
 		var a models.Article
-		var summary, imageURL, translatedTitle sql.NullString
-		if err := rows.Scan(&a.ID, &a.FeedID, &a.Title, &a.URL, &a.Content, &summary, &imageURL, &a.PublishedAt, &a.IsRead, &a.IsFavorite, &translatedTitle, &a.FeedTitle); err != nil {
+		var imageURL, translatedTitle sql.NullString
+		if err := rows.Scan(&a.ID, &a.FeedID, &a.Title, &a.URL, &imageURL, &a.PublishedAt, &a.IsRead, &a.IsFavorite, &translatedTitle, &a.FeedTitle); err != nil {
 			log.Println("Error scanning article:", err)
 			continue
 		}
-		a.Summary = summary.String
 		a.ImageURL = imageURL.String
 		a.TranslatedTitle = translatedTitle.String
 		articles = append(articles, a)
@@ -316,4 +407,66 @@ func (db *DB) SetSetting(key, value string) error {
 	db.WaitForReady()
 	_, err := db.Exec("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", key, value)
 	return err
+}
+
+// CleanupOldArticles removes articles based on age and status
+// - Articles older than 1 week: delete except read OR favorited
+// - Articles older than 1 month: delete except favorited
+func (db *DB) CleanupOldArticles() (int64, error) {
+	db.WaitForReady()
+	
+	oneWeekAgo := time.Now().AddDate(0, 0, -7)
+	oneMonthAgo := time.Now().AddDate(0, -1, 0)
+	
+	// Delete articles older than 1 month that are not favorited
+	result1, err := db.Exec(`
+		DELETE FROM articles 
+		WHERE published_at < ? 
+		AND is_favorite = 0
+	`, oneMonthAgo)
+	if err != nil {
+		return 0, err
+	}
+	
+	count1, _ := result1.RowsAffected()
+	
+	// Delete articles older than 1 week (but less than 1 month) that are not read and not favorited
+	result2, err := db.Exec(`
+		DELETE FROM articles 
+		WHERE published_at < ? 
+		AND published_at >= ?
+		AND is_read = 0 
+		AND is_favorite = 0
+	`, oneWeekAgo, oneMonthAgo)
+	if err != nil {
+		return count1, err
+	}
+	
+	count2, _ := result2.RowsAffected()
+	
+	// Run VACUUM to reclaim space
+	_, _ = db.Exec("VACUUM")
+	
+	return count1 + count2, nil
+}
+
+// CleanupUnimportantArticles removes all articles except read and favorited ones
+func (db *DB) CleanupUnimportantArticles() (int64, error) {
+	db.WaitForReady()
+	
+	result, err := db.Exec(`
+		DELETE FROM articles 
+		WHERE is_read = 0 
+		AND is_favorite = 0
+	`)
+	if err != nil {
+		return 0, err
+	}
+	
+	count, _ := result.RowsAffected()
+	
+	// Run VACUUM to reclaim space
+	_, _ = db.Exec("VACUUM")
+	
+	return count, nil
 }

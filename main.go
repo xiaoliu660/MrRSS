@@ -51,6 +51,13 @@ func main() {
 		log.Printf("Error initializing database: %v", err)
 		log.Fatal(err)
 	}
+	
+	// Run database schema initialization synchronously to ensure it's ready
+	log.Println("Running DB migrations...")
+	if err := db.Init(); err != nil {
+		log.Printf("Error initializing database schema: %v", err)
+		log.Fatal(err)
+	}
 	log.Println("Database initialized successfully")
 
 	translator := translation.NewGoogleFreeTranslator()
@@ -67,6 +74,7 @@ func main() {
 	apiMux.HandleFunc("/api/articles", h.HandleArticles)
 	apiMux.HandleFunc("/api/articles/read", h.HandleMarkRead)
 	apiMux.HandleFunc("/api/articles/favorite", h.HandleToggleFavorite)
+	apiMux.HandleFunc("/api/articles/cleanup", h.HandleCleanupArticles)
 	apiMux.HandleFunc("/api/settings", h.HandleSettings)
 	apiMux.HandleFunc("/api/refresh", h.HandleRefresh)
 	apiMux.HandleFunc("/api/progress", h.HandleProgress)
@@ -130,15 +138,7 @@ func main() {
 		OnStartup: func(ctx context.Context) {
 			log.Println("App started")
 
-			// Initialize DB in background
-			go func() {
-				log.Println("Running DB migrations...")
-				if err := db.Init(); err != nil {
-					log.Printf("Error initializing database schema: %v", err)
-				}
-				log.Println("DB migrations finished")
-			}()
-
+			// Start background scheduler after a short delay
 			go func() {
 				time.Sleep(2 * time.Second)
 				h.StartBackgroundScheduler(bgCtx)
