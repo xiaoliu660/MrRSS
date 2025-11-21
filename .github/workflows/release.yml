@@ -195,18 +195,21 @@ jobs:
           # Use full path since chocolatey doesn't refresh PATH in current session
           & "C:\Program Files (x86)\NSIS\makensis.exe" build/windows/installer.nsi
         shell: pwsh
+        continue-on-error: true
       
       - name: Create installer (Linux)
         if: matrix.platform == 'linux'
         run: |
           chmod +x build/linux/create-appimage.sh
           ./build/linux/create-appimage.sh
+        continue-on-error: true
       
       - name: Create installer (macOS)
         if: matrix.platform == 'darwin'
         run: |
           chmod +x build/macos/create-dmg.sh
           ./build/macos/create-dmg.sh
+        continue-on-error: true
       
       - name: Package application (Linux - tar.gz fallback)
         if: matrix.platform == 'linux'
