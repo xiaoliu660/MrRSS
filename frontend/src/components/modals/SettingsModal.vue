@@ -18,7 +18,7 @@ const settings = ref({
 
 const updateInfo = ref(null);
 const checkingUpdates = ref(false);
-const appVersion = ref('1.1.0');
+const appVersion = ref('1.1.1');
 
 onMounted(async () => {
     // Fetch current version from API
@@ -429,7 +429,7 @@ async function checkForUpdates() {
                                 </div>
                                 <div class="flex gap-1 shrink-0">
                                     <button @click="editFeed(feed)" class="text-accent hover:bg-bg-tertiary p-1 rounded text-sm" :title="store.i18n.t('edit')"><i class="ph ph-pencil"></i></button>
-                                    <button @click="deleteFeed(feed.id)" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded text-sm" :title="store.i18n.t('delete')"><i class="ph ph-trash"></i></button>
+                                    <button @click="deleteFeed(feed.id)" class="text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded text-sm" :title="store.i18n.t('delete')"><i class="ph ph-trash"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -511,7 +511,7 @@ async function checkForUpdates() {
     @apply opacity-50 cursor-not-allowed;
 }
 .btn-danger {
-    @apply bg-transparent border border-red-300 text-red-600 px-4 py-2 rounded-md cursor-pointer flex items-center gap-2 font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 dark:border-red-400 transition-colors;
+    @apply bg-transparent border border-red-300 text-red-600 px-4 py-2 rounded-md cursor-pointer flex items-center gap-2 font-semibold hover:bg-red-50 dark:hover:bg-red-900/20 dark:border-red-400 dark:text-red-400 transition-colors;
 }
 .btn-danger:disabled {
     @apply opacity-50 cursor-not-allowed;
