@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="frontend/logo.svg" alt="MrRSS Logo" width="120" height="120">
+  <img src="frontend/assets/logo.svg" alt="MrRSS Logo" width="120" height="120">
   <h1>MrRSS</h1>
   <p><strong>A Modern, Cross-Platform Desktop RSS Reader</strong></p>
   
@@ -8,8 +8,6 @@
   [![Go](https://img.shields.io/badge/Go-1.21+-00ADD8?logo=go)](https://go.dev/)
   [![Wails](https://img.shields.io/badge/Wails-v2-red)](https://wails.io/)
   [![Vue.js](https://img.shields.io/badge/Vue.js-3.x-4FC08D?logo=vue.js)](https://vuejs.org/)
-  
-  <p>Built with Wails, Go, and Vue.js</p>
 </div>
 
 ---
@@ -48,29 +46,33 @@ Before you begin, ensure you have the following installed:
 ### Installation
 
 1. **Clone the repository**
-   \`\`\`bash
+
+   ```bash
    git clone https://github.com/WCY-dt/MrRSS.git
    cd MrRSS
-   \`\`\`
+   ```
 
 2. **Install frontend dependencies**
-   \`\`\`bash
+
+   ```bash
    cd frontend
    npm install
    cd ..
-   \`\`\`
+   ```
 
 3. **Build the application**
-   \`\`\`bash
+
+   ```bash
    wails build
-   \`\`\`
-   
-   The executable will be created in the \`build/bin\` directory.
+   ```
+
+   The executable will be created in the `build/bin` directory.
 
 4. **Run the application**
-   - Windows: \`build/bin/MrRSS.exe\`
-   - macOS: \`build/bin/MrRSS.app\`
-   - Linux: \`build/bin/MrRSS\`
+
+   - Windows: `build/bin/MrRSS.exe`
+   - macOS: `build/bin/MrRSS.app`
+   - Linux: `build/bin/MrRSS`
 
 ## 🛠️ Development
 
@@ -78,41 +80,42 @@ Before you begin, ensure you have the following installed:
 
 Start the application with hot reloading:
 
-\`\`\`bash
+```bash
 wails dev
-\`\`\`
+```
 
 This will:
+
 - Start the Go backend with live reload
 - Start the Vue.js frontend dev server
 - Open the application in a development window
 
 ### Building for Production
 
-\`\`\`bash
+```bash
 # Build for current platform
 wails build
 
 # Build with specific flags
 wails build -clean -ldflags "-s -w"
-\`\`\`
+```
 
 For Windows-specific builds, see [BUILD_WINDOWS.md](BUILD_WINDOWS.md).
 
 ### Running Tests
 
-\`\`\`bash
+```bash
 # Backend tests
 go test ./...
 
 # Frontend tests
 cd frontend
 npm test
-\`\`\`
+```
 
 ## 📁 Project Structure
 
-\`\`\`
+```plaintext
 MrRSS/
 ├── main.go                    # Application entry point
 ├── wails.json                 # Wails configuration
@@ -131,7 +134,7 @@ MrRSS/
 │   │   └── App.vue           # Root component
 │   └── wailsjs/              # Auto-generated Go bindings
 └── build/                     # Build output directory
-\`\`\`
+```
 
 ## 🎯 Usage
 
@@ -150,8 +153,8 @@ MrRSS/
 
 ### Keyboard Shortcuts
 
-- \`Ctrl/Cmd + R\` - Refresh all feeds
-- \`Esc\` - Close modals
+- `Ctrl/Cmd + R` - Refresh all feeds
+- `Esc` - Close modals
 - Arrow keys - Navigate articles
 
 ## ⚙️ Configuration
@@ -183,6 +186,7 @@ Access settings via the gear icon in the sidebar:
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
 Before contributing:
+
 1. Read the [Code of Conduct](CODE_OF_CONDUCT.md)
 2. Check existing issues or create a new one
 3. Fork the repository and create a feature branch
@@ -207,7 +211,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📮 Contact & Support
 
 - **Issues**: [GitHub Issues](https://github.com/WCY-dt/MrRSS/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/WCY-dt/MrRSS/discussions)
 - **Repository**: [github.com/WCY-dt/MrRSS](https://github.com/WCY-dt/MrRSS)
 
 ---

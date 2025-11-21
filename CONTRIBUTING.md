@@ -21,9 +21,9 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: \`git clone https://github.com/YOUR_USERNAME/MrRSS.git\`
-3. Add upstream remote: \`git remote add upstream https://github.com/WCY-dt/MrRSS.git\`
-4. Create a new branch: \`git checkout -b feature/your-feature-name\`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/MrRSS.git`
+3. Add upstream remote: `git remote add upstream https://github.com/WCY-dt/MrRSS.git`
+4. Create a new branch: `git checkout -b feature/your-feature-name`
 
 ## Development Setup
 
@@ -31,26 +31,29 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 - Go 1.21 or higher
 - Node.js (LTS version)
-- Wails CLI: \`go install github.com/wailsapp/wails/v2/cmd/wails@latest\`
+- Wails CLI: `go install github.com/wailsapp/wails/v2/cmd/wails@latest`
 
 ### Setup Steps
 
 1. Install frontend dependencies:
-   \`\`\`bash
+
+   ```bash
    cd frontend
    npm install
    cd ..
-   \`\`\`
+   ```
 
 2. Run in development mode:
-   \`\`\`bash
+
+   ```bash
    wails dev
-   \`\`\`
+   ```
 
 3. Build for production:
-   \`\`\`bash
+
+   ```bash
    wails build
-   \`\`\`
+   ```
 
 ## How to Contribute
 
@@ -78,14 +81,15 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ### Go Backend
 
 - Follow [Effective Go](https://golang.org/doc/effective_go.html) guidelines
-- Use \`gofmt\` to format code
-- Run \`go vet\` to check for common mistakes
+- Use `gofmt` to format code
+- Run `go vet` to check for common mistakes
 - Add comments for exported functions and types
 - Keep functions small and focused
 - Handle errors explicitly
 
 Example:
-\`\`\`go
+
+```go
 // FetchFeed retrieves and parses an RSS feed from the given URL
 func (f *Fetcher) FetchFeed(url string) (*Feed, error) {
     if url == "" {
@@ -94,7 +98,7 @@ func (f *Fetcher) FetchFeed(url string) (*Feed, error) {
     
     // Implementation...
 }
-\`\`\`
+```
 
 ### Vue.js Frontend
 
@@ -106,7 +110,8 @@ func (f *Fetcher) FetchFeed(url string) (*Feed, error) {
 - Ensure responsive design
 
 Example:
-\`\`\`vue
+
+```javascript
 <script setup>
 import { ref, computed } from 'vue';
 
@@ -116,48 +121,50 @@ const props = defineProps({
 
 const isExpanded = ref(false);
 </script>
-\`\`\`
+```
 
 ### File Organization
 
-- Backend: \`internal/\` for internal packages
-- Frontend: \`frontend/src/components/\` for Vue components
+- Backend: `internal/` for internal packages
+- Frontend: `frontend/src/components/` for Vue components
 - Tests: Co-locate tests with the code they test
-- Assets: \`frontend/assets/\` for images, icons, etc.
+- Assets: `frontend/assets/` for images, icons, etc.
 
 ### Commit Messages
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-\`\`\`
+```plaintext
 <type>(<scope>): <description>
 
 [optional body]
 
 [optional footer]
-\`\`\`
+```
 
 Types:
-- \`feat\`: New feature
-- \`fix\`: Bug fix
-- \`docs\`: Documentation changes
-- \`style\`: Code style changes (formatting, etc.)
-- \`refactor\`: Code refactoring
-- \`test\`: Adding or updating tests
-- \`chore\`: Maintenance tasks
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
 
 Examples:
-\`\`\`
+
+```plaintext
 feat(feed): add support for Atom feeds
 fix(ui): resolve mobile layout issue
 docs(readme): update installation instructions
-\`\`\`
+```
 
 ## Testing
 
 ### Backend Tests
 
-\`\`\`bash
+```bash
 # Run all tests
 go test ./...
 
@@ -166,18 +173,19 @@ go test -cover ./...
 
 # Run specific package
 go test ./internal/feed
-\`\`\`
+```
 
 ### Frontend Tests
 
-\`\`\`bash
+```bash
 cd frontend
 npm test
-\`\`\`
+```
 
 ### Manual Testing
 
 Before submitting a PR, manually test:
+
 1. Build the application
 2. Test on your target platform
 3. Verify all affected features work correctly
@@ -187,10 +195,11 @@ Before submitting a PR, manually test:
 ## Pull Request Process
 
 1. **Update your branch** with the latest upstream changes:
-   \`\`\`bash
+
+   ```bash
    git fetch upstream
    git rebase upstream/main
-   \`\`\`
+   ```
 
 2. **Run tests** and ensure they all pass
 

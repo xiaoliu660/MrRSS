@@ -16,7 +16,7 @@ MrRSS is a cross-platform desktop RSS reader built with Wails (Go + Vue.js). It 
 
 When writing Go code:
 
-\`\`\`go
+```go
 // Always use context for exported methods
 func (h *Handler) MethodName(ctx context.Context, param string) (Result, error) {
     if param == "" {
@@ -38,13 +38,13 @@ defer stmt.Close()
 if err != nil {
     return nil, fmt.Errorf("operation failed: %w", err)
 }
-\`\`\`
+```
 
 ### Frontend (Vue)
 
 When writing Vue components:
 
-\`\`\`vue
+```vue
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { store } from '../store.js';
@@ -105,7 +105,7 @@ onMounted(() => {
     @apply p-4 bg-bg-primary rounded-lg;
 }
 </style>
-\`\`\`
+```
 
 ## Styling Guidelines
 
@@ -113,7 +113,7 @@ onMounted(() => {
 
 Use these semantic class combinations:
 
-\`\`\`html
+```html
 <!-- Buttons -->
 <button class="btn-primary">Primary Action</button>
 <button class="btn-secondary">Secondary Action</button>
@@ -134,37 +134,37 @@ Use these semantic class combinations:
         <!-- Content -->
     </div>
 </div>
-\`\`\`
+```
 
 ### Theme Variables
 
 Use CSS variables for theming:
 
-\`\`\`css
+```css
 /* Colors follow theme */
 background-color: var(--color-bg-primary);
 color: var(--color-text-primary);
 
 /* Or use Tailwind classes */
 class="bg-bg-primary text-text-primary"
-\`\`\`
+```
 
 ## Internationalization
 
 Always use i18n for user-facing strings:
 
-\`\`\`vue
+```vue
 <!-- Template -->
 <h1>{{ store.i18n.t('welcome') }}</h1>
 <button :title="store.i18n.t('clickToOpen')">
 
 <!-- Script -->
 window.showToast(store.i18n.t('successMessage'), 'success');
-\`\`\`
+```
 
-To add new strings, edit \`frontend/src/i18n.js\`:
+To add new strings, edit `frontend/src/i18n.js`:
 
-\`\`\`javascript
+```javascript
 export const translations = {
     en: {
         // English translations
@@ -175,13 +175,13 @@ export const translations = {
         newKey: '新字符串',
     }
 };
-\`\`\`
+```
 
 ## Common Patterns
 
 ### API Calls (Frontend → Backend)
 
-\`\`\`javascript
+```javascript
 // Import from generated bindings
 import { MethodName } from './wailsjs/go/internal/handlers/Handler.js';
 
@@ -193,11 +193,11 @@ try {
     console.error('Error:', error);
     window.showToast(store.i18n.t('error'), 'error');
 }
-\`\`\`
+```
 
 ### Custom Events
 
-\`\`\`javascript
+```javascript
 // Dispatch event
 window.dispatchEvent(new CustomEvent('event-name', {
     detail: { data: value }
@@ -208,17 +208,17 @@ window.addEventListener('event-name', (e) => {
     const data = e.detail.data;
     // Handle event
 });
-\`\`\`
+```
 
 ### Toast Notifications
 
-\`\`\`javascript
+```javascript
 window.showToast(message, type);  // type: 'success' | 'error' | 'info' | 'warning'
-\`\`\`
+```
 
 ### Confirm Dialogs
 
-\`\`\`javascript
+```javascript
 const confirmed = await window.showConfirm(
     store.i18n.t('confirmTitle'),
     store.i18n.t('confirmMessage'),
@@ -228,21 +228,21 @@ const confirmed = await window.showConfirm(
 if (confirmed) {
     // Proceed with action
 }
-\`\`\`
+```
 
 ## Database Operations
 
 ### Query Pattern
 
-\`\`\`go
+```go
 // Use prepared statements
 func (db *Database) GetArticles(feedID int) ([]models.Article, error) {
-    rows, err := db.conn.Query(\`
+    rows, err := db.conn.Query(`
         SELECT id, title, url, content, published_at
         FROM articles
         WHERE feed_id = ?
         ORDER BY published_at DESC
-    \`, feedID)
+    `, feedID)
     if err != nil {
         return nil, fmt.Errorf("query: %w", err)
     }
@@ -260,13 +260,13 @@ func (db *Database) GetArticles(feedID int) ([]models.Article, error) {
     
     return articles, rows.Err()
 }
-\`\`\`
+```
 
 ## Testing
 
 ### Backend Tests
 
-\`\`\`go
+```go
 func TestFunctionName(t *testing.T) {
     // Setup
     input := "test"
@@ -283,28 +283,29 @@ func TestFunctionName(t *testing.T) {
         t.Errorf("got %v, want %v", result, expected)
     }
 }
-\`\`\`
+```
 
 ### Frontend Tests
 
-\`\`\`javascript
+```javascript
 describe('Component', () => {
     it('should render correctly', () => {
         // Test implementation
     });
 });
-\`\`\`
+```
 
 ## Documentation
 
 When adding new features:
 
 1. **Code Comments**: Document exported functions
-   \`\`\`go
+
+   ```go
    // FetchFeed retrieves and parses an RSS feed from the given URL.
    // Returns an error if the URL is invalid or the feed cannot be parsed.
    func FetchFeed(url string) (*Feed, error) {
-   \`\`\`
+   ```
 
 2. **README Updates**: Document user-facing features
 
@@ -313,18 +314,20 @@ When adding new features:
 ## Don'ts
 
 ❌ **Don't**:
-- Use \`var\` in Vue (use \`ref\` or \`reactive\`)
+
+- Use `var` in Vue (use `ref` or `reactive`)
 - Hardcode strings (use i18n)
 - Use inline styles (use Tailwind classes)
 - Forget error handling
-- Use \`any\` type without good reason
+- Use `any` type without good reason
 - Commit API keys or secrets
-- Use \`v-html\` (XSS risk)
+- Use `v-html` (XSS risk)
 - Make breaking changes without discussion
 
 ## Do's
 
 ✅ **Do**:
+
 - Use TypeScript-style JSDoc for better IDE support
 - Follow existing code patterns
 - Write tests for new features
@@ -337,14 +340,14 @@ When adding new features:
 
 ## File Naming
 
-- Components: \`PascalCase.vue\` (e.g., \`ArticleList.vue\`)
-- Go files: \`lowercase.go\` (e.g., \`fetcher.go\`)
-- Test files: \`*_test.go\`
-- Utilities: \`kebab-case.js\` (e.g., \`date-utils.js\`)
+- Components: `PascalCase.vue` (e.g., `ArticleList.vue`)
+- Go files: `lowercase.go` (e.g., `fetcher.go`)
+- Test files: `*_test.go`
+- Utilities: `kebab-case.js` (e.g., `date-utils.js`)
 
 ## Useful Commands
 
-\`\`\`bash
+```bash
 # Development
 wails dev                          # Run in dev mode
 wails build                        # Build for production
@@ -361,19 +364,20 @@ cd frontend && npm run lint        # Frontend linter
 # Dependencies
 go mod tidy                        # Clean Go dependencies
 cd frontend && npm install         # Install npm packages
-\`\`\`
+```
 
 ## Quick Reference
 
-**Get current theme**: \`store.theme\` (returns \`'light'\` or \`'dark'\`)
-**Get current language**: \`store.i18n.locale.value\` (returns \`'en'\` or \`'zh'\`)
-**Global store**: \`import { store } from './store.js'\`
-**Show notification**: \`window.showToast(message, type)\`
-**Confirm action**: \`await window.showConfirm(title, message, isDanger)\`
+**Get current theme**: `store.theme` (returns `'light'` or `'dark'`)
+**Get current language**: `store.i18n.locale.value` (returns `'en'` or `'zh')`)
+**Global store**: `import { store } from './store.js'`
+**Show notification**: `window.showToast(message, type)`
+**Confirm action**: `await window.showConfirm(title, message, isDanger)`
 
 ---
 
 When generating code, prioritize:
+
 1. **Correctness**: Code that works
 2. **Consistency**: Follow existing patterns
 3. **Clarity**: Easy to understand

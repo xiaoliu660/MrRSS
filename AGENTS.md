@@ -5,12 +5,14 @@ This document provides comprehensive guidance for AI agents (like GitHub Copilot
 ## Project Overview
 
 **MrRSS** is a modern, cross-platform desktop RSS reader built with:
+
 - **Backend**: Go 1.21+ with Wails v2 framework
 - **Frontend**: Vue.js 3 (Composition API) with Tailwind CSS
 - **Database**: SQLite for local storage
 - **Build Tool**: Wails CLI
 
 ### Core Functionality
+
 - RSS/Atom feed subscription and parsing
 - Article management (read/unread, favorites)
 - Category-based organization
@@ -21,7 +23,7 @@ This document provides comprehensive guidance for AI agents (like GitHub Copilot
 
 ## Project Structure
 
-\`\`\`
+```plaintext
 MrRSS/
 ├── main.go                      # Application entry point
 ├── wails.json                   # Wails configuration, version info
@@ -53,29 +55,33 @@ MrRSS/
 │   │   └── style.css           # Global styles
 │   └── wailsjs/                # Auto-generated Go→JS bindings
 └── test/                        # Test files
-\`\`\`
+```
 
 ## Key Technologies & Patterns
 
 ### Backend (Go)
 
 **Wails Framework**:
-- Use \`context.Context\` for all exported methods
+
+- Use `context.Context` for all exported methods
 - Methods are automatically exposed to frontend
 - Use struct methods for organization
 
 **Database**:
-- SQLite with \`modernc.org/sqlite\` driver
+
+- SQLite with `modernc.org/sqlite` driver
 - Use prepared statements
 - Migrations removed (development phase)
-- Default settings in \`Init()\`
+- Default settings in `Init()`
 
 **RSS Parsing**:
-- Use \`github.com/mmcdole/gofeed\` for parsing
+
+- Use `github.com/mmcdole/gofeed` for parsing
 - Support both RSS and Atom formats
 - Handle malformed feeds gracefully
 
 **Translation**:
+
 - Google Translate: Free, no API key
 - DeepL: Requires API key
 - Store translations in database
@@ -83,7 +89,8 @@ MrRSS/
 ### Frontend (Vue.js)
 
 **Vue 3 Composition API**:
-\`\`\`vue
+
+```vue
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { store } from '../store.js';
@@ -95,86 +102,99 @@ onMounted(async () => {
   // Initialize
 });
 </script>
-\`\`\`
+```
 
 **State Management**:
-- Use \`store.js\` for global state
-- Reactive with Vue's \`reactive()\`
+
+- Use `store.js` for global state
+- Reactive with Vue's `reactive()`
 - Methods for state mutations
 
 **Styling**:
+
 - Tailwind CSS utility classes
 - Theme variables in CSS
-- Dark mode support via \`data-theme\`
+- Dark mode support via `data-theme`
 
 **Internationalization**:
-- \`i18n.js\` provides translation function
-- Use \`store.i18n.t('key')\` in templates
-- Support English (\`en\`) and Chinese (\`zh\`)
+
+- `i18n.js` provides translation function
+- Use `store.i18n.t('key')` in templates
+- Support English (`en`) and Chinese (`zh`)
 
 ## Development Guidelines
 
 ### Code Style
 
 **Go**:
-- Follow \`gofmt\` formatting
+
+- Follow `gofmt` formatting
 - Use meaningful variable names
 - Handle errors explicitly
 - Add comments for exported functions
 - Keep functions focused and small
 
 **Vue.js**:
-- Use \`<script setup>\` syntax
-- Props validation with \`defineProps\`
-- Emit declarations with \`defineEmits\`
+
+- Use `<script setup>` syntax
+- Props validation with `defineProps`
+- Emit declarations with `defineEmits`
 - Composition API over Options API
 - Keep components under 300 lines
 
 **Commit Messages**:
+
 Follow Conventional Commits:
-\`\`\`
+
+```plaintext
 <type>(<scope>): <description>
 
 [optional body]
-\`\`\`
+```
 
-Types: \`feat\`, \`fix\`, \`docs\`, \`style\`, \`refactor\`, \`test\`, \`chore\`
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 ### Testing
 
 **Backend**:
-\`\`\`bash
+
+```bash
 go test ./...
 go test -cover ./internal/database
-\`\`\`
+```
 
 **Frontend**:
-\`\`\`bash
+
+```bash
 cd frontend
 npm test
 npm run lint
-\`\`\`
+```
 
 **Manual Testing**:
-\`\`\`bash
+
+```bash
 wails dev  # Development mode with hot reload
 wails build  # Production build
-\`\`\`
+```
 
 ### Building
 
 **Development**:
-\`\`\`bash
+
+```bash
 wails dev
-\`\`\`
+```
 
 **Production**:
-\`\`\`bash
+
+```bash
 wails build -clean -ldflags "-s -w"
-\`\`\`
+```
 
 **Platform-Specific**:
-- Windows: See \`BUILD_WINDOWS.md\`
+
+- Windows: Built for amd64 and arm64
 - macOS: Universal binary (Intel + Apple Silicon)
 - Linux: Built for amd64
 
@@ -196,39 +216,41 @@ wails build -clean -ldflags "-s -w"
 
 ### Adding Translations
 
-1. Edit \`frontend/src/i18n.js\`
-2. Add keys to both \`en\` and \`zh\` sections
-3. Use \`store.i18n.t('newKey')\` in templates
+1. Edit `frontend/src/i18n.js`
+2. Add keys to both `en` and `zh` sections
+3. Use `store.i18n.t('newKey')` in templates
 4. Test language switching
 
 ### Database Changes
 
-1. Edit \`internal/database/sqlite.go\`
-2. Update \`Init()\` function with new schema
+1. Edit `internal/database/sqlite.go`
+2. Update `Init()` function with new schema
 3. No migrations (development phase)
 4. Users should back up data before updates
 
 ### UI Changes
 
 1. Use existing Tailwind classes
-2. Follow dark mode pattern: \`class="bg-bg-primary text-text-primary"\`
+2. Follow dark mode pattern: `class="bg-bg-primary text-text-primary"`
 3. Ensure responsive design
 4. Test in both themes
-5. Add icons from Phosphor Icons (\`ph ph-*\`)
+5. Add icons from Phosphor Icons (`ph ph-*`)
 
 ## Important Conventions
 
 ### Naming
 
 **Go**:
-- Exported: \`PascalCase\` (e.g., \`FetchFeed\`)
-- Unexported: \`camelCase\` (e.g., \`parseXML\`)
-- Interfaces: Usually noun (e.g., \`Reader\`, \`Handler\`)
+
+- Exported: `PascalCase` (e.g., `FetchFeed`)
+- Unexported: `camelCase` (e.g., `parseXML`)
+- Interfaces: Usually noun (e.g., `Reader`, `Handler`)
 
 **Vue**:
-- Components: \`PascalCase\` files (e.g., \`ArticleList.vue\`)
-- Props/emits: \`camelCase\` (e.g., \`feedId\`, \`onUpdate\`)
-- CSS classes: \`kebab-case\` (e.g., \`article-card\`)
+
+- Components: `PascalCase` files (e.g., `ArticleList.vue`)
+- Props/emits: `camelCase` (e.g., `feedId`, `onUpdate`)
+- CSS classes: `kebab-case` (e.g., `article-card`)
 
 ### File Organization
 
@@ -240,27 +262,29 @@ wails build -clean -ldflags "-s -w"
 ### Error Handling
 
 **Go**:
-\`\`\`go
+
+```go
 if err != nil {
     return fmt.Errorf("context: %w", err)
 }
-\`\`\`
+```
 
 **Vue**:
-\`\`\`javascript
+
+```javascript
 try {
     // operation
 } catch (e) {
     console.error(e);
     window.showToast(store.i18n.t('error'), 'error');
 }
-\`\`\`
+```
 
 ## Security Considerations
 
 1. **Input Validation**: Validate all user inputs
 2. **SQL Injection**: Use parameterized queries
-3. **XSS**: Vue escapes by default, don't use \`v-html\`
+3. **XSS**: Vue escapes by default, don't use `v-html`
 4. **API Keys**: Store locally, never commit
 5. **Feed Content**: Displayed in iframe with sandbox
 
@@ -275,21 +299,24 @@ try {
    - Virtual scrolling for large lists
    - Lazy load images
    - Debounce search inputs
-   - Use \`v-show\` vs \`v-if\` appropriately
+   - Use `v-show` vs `v-if` appropriately
 
 ## Debugging
 
 **Backend**:
-- Use \`fmt.Println\` or \`log.Printf\`
+
+- Use `fmt.Println` or `log.Printf`
 - Check Wails console output
 - Use Go debugger (Delve)
 
 **Frontend**:
+
 - Browser DevTools console
 - Vue DevTools extension
 - Check Network tab for API calls
 
 **Common Issues**:
+
 1. **CORS**: Not applicable (native app)
 2. **Feed parsing**: Check feed URL format
 3. **Translation**: Verify API key for DeepL
@@ -297,18 +324,18 @@ try {
 
 ## Version Management
 
-- Version in \`wails.json\`: \`"version"\` and \`"productVersion"\`
-- Version in frontend: \`SettingsModal.vue\` About tab
+- Version in `wails.json`: `"version"` and `"productVersion"`
+- Version in frontend: `SettingsModal.vue` About tab
 - Follow Semantic Versioning (MAJOR.MINOR.PATCH)
 - Current: 1.1.0
 
 ## Resources
 
-- **Wails Docs**: https://wails.io/docs/
-- **Vue.js Docs**: https://vuejs.org/
-- **Tailwind CSS**: https://tailwindcss.com/
-- **Go Docs**: https://golang.org/doc/
-- **gofeed**: https://github.com/mmcdole/gofeed
+- **Wails Docs**: [https://wails.io/docs/](https://wails.io/docs/)
+- **Vue.js Docs**: [https://vuejs.org/](https://vuejs.org/)
+- **Tailwind CSS**: [https://tailwindcss.com/](https://tailwindcss.com/)
+- **Go Docs**: [https://golang.org/doc/](https://golang.org/doc/)
+- **gofeed**: [https://github.com/mmcdole/gofeed](https://github.com/mmcdole/gofeed)
 
 ## Getting Help
 

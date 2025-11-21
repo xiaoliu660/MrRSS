@@ -110,8 +110,8 @@ Security updates are released as soon as possible after a vulnerability is confi
 ## Contact
 
 For security-related questions that are not vulnerabilities:
-- Open a [Discussion](https://github.com/WCY-dt/MrRSS/discussions)
-- Check our [FAQ](https://github.com/WCY-dt/MrRSS/wiki/FAQ)
+
+- Contact us at [mail@ch3nyang.top](mailto:mail@ch3nyang.top)
 
 ---
 
