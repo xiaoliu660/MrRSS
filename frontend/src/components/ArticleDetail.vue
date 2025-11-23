@@ -27,6 +27,11 @@ watch(() => store.currentArticleId, async (newId, oldId) => {
     }
 });
 
+// Listen for default view mode changes from settings
+window.addEventListener('default-view-mode-changed', (e) => {
+    defaultViewMode.value = e.detail.mode;
+});
+
 function close() {
     store.currentArticleId = null;
     showContent.value = false;
@@ -89,6 +94,13 @@ async function fetchArticleContent() {
 // Listen for render content event from context menu
 async function handleRenderContent() {
     if (!article.value) return;
+    
+    // Mark as read when rendering content
+    if (!article.value.is_read) {
+        article.value.is_read = true;
+        fetch(`/api/articles/read?id=${article.value.id}&read=true`, { method: 'POST' });
+    }
+    
     // Check if we need to fetch content for this article
     if (currentArticleId.value !== article.value.id) {
         await fetchArticleContent();
@@ -149,7 +161,7 @@ onBeforeUnmount(() => {
             
             <!-- RSS content view -->
             <div v-else class="flex-1 overflow-y-auto bg-bg-primary p-6">
-                <div class="max-w-3xl mx-auto">
+                <div class="max-w-3xl mx-auto bg-bg-primary">
                     <h1 class="text-3xl font-bold mb-4 text-text-primary">{{ article.title }}</h1>
                     <div class="text-sm text-text-secondary mb-6 flex items-center gap-4">
                         <span>{{ article.feed_title }}</span>
@@ -157,8 +169,8 @@ onBeforeUnmount(() => {
                         <span>{{ new Date(article.published_at).toLocaleDateString() }}</span>
                     </div>
                     
-                    <!-- Loading state -->
-                    <div v-if="isLoadingContent" class="text-center text-text-secondary py-8">
+                    <!-- Loading state with proper background -->
+                    <div v-if="isLoadingContent" class="text-center text-text-secondary py-8 bg-bg-primary">
                         <i class="ph ph-spinner ph-spin text-5xl mb-3"></i>
                         <p>{{ store.i18n.locale.value === 'zh' ? '加载内容中...' : 'Loading content...' }}</p>
                     </div>

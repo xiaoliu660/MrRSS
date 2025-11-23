@@ -65,6 +65,13 @@ async function autoSave() {
         store.setTheme(props.settings.theme);
         store.startAutoRefresh(props.settings.update_interval);
         
+        // Notify components about default view mode change
+        window.dispatchEvent(new CustomEvent('default-view-mode-changed', {
+            detail: {
+                mode: props.settings.default_view_mode
+            }
+        }));
+        
         // Clear and re-translate if translation settings changed
         if (translationChanged) {
             await fetch('/api/articles/clear-translations', { method: 'POST' });
@@ -150,7 +157,7 @@ function formatLastUpdate(timestamp) {
                         <div class="text-xs text-text-secondary">{{ store.i18n.t('themeDesc') }}</div>
                     </div>
                 </div>
-                <select v-model="settings.theme" class="input-field w-40">
+                <select v-model="settings.theme" class="input-field w-48">
                     <option value="light">{{ store.i18n.t('light') }}</option>
                     <option value="dark">{{ store.i18n.t('dark') }}</option>
                     <option value="auto">{{ store.i18n.t('auto') }}</option>
@@ -164,7 +171,7 @@ function formatLastUpdate(timestamp) {
                         <div class="text-xs text-text-secondary">{{ store.i18n.t('languageDesc') }}</div>
                     </div>
                 </div>
-                <select v-model="settings.language" class="input-field w-32">
+                <select v-model="settings.language" class="input-field w-48">
                     <option value="en">{{ store.i18n.t('english') }}</option>
                     <option value="zh">{{ store.i18n.t('chinese') }}</option>
                 </select>

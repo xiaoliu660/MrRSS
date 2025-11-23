@@ -9,6 +9,7 @@ const translationSettings = ref({
     targetLang: 'en'
 });
 const translatingArticles = ref(new Set());
+const defaultViewMode = ref('original'); // Track default view mode for context menu
 
 const props = defineProps(['isSidebarOpen']);
 const emit = defineEmits(['toggleSidebar']);
@@ -22,6 +23,7 @@ onMounted(async () => {
             enabled: data.translation_enabled === 'true',
             targetLang: data.target_language || 'en'
         };
+        defaultViewMode.value = data.default_view_mode || 'original';
         
         // Set up intersection observer for auto-translation
         if (translationSettings.value.enabled) {
@@ -33,6 +35,8 @@ onMounted(async () => {
     
     // Listen for translation settings changes
     window.addEventListener('translation-settings-changed', handleTranslationSettingsChange);
+    // Listen for default view mode changes
+    window.addEventListener('default-view-mode-changed', handleDefaultViewModeChange);
 });
 
 onBeforeUnmount(() => {
@@ -41,7 +45,13 @@ onBeforeUnmount(() => {
         observer = null;
     }
     window.removeEventListener('translation-settings-changed', handleTranslationSettingsChange);
+    window.removeEventListener('default-view-mode-changed', handleDefaultViewModeChange);
 });
+
+// Handle default view mode changes
+function handleDefaultViewModeChange(e) {
+    defaultViewMode.value = e.detail.mode;
+}
 
 // Handle translation settings changes
 function handleTranslationSettingsChange(e) {
@@ -160,6 +170,15 @@ const filteredArticles = computed(() => {
 function onArticleContextMenu(e, article) {
     e.preventDefault();
     e.stopPropagation();
+    
+    // Determine context menu text based on default view mode
+    const contentActionLabel = defaultViewMode.value === 'rendered' 
+        ? store.i18n.t('showOriginal')
+        : store.i18n.t('renderContent');
+    const contentActionIcon = defaultViewMode.value === 'rendered' 
+        ? 'ph-globe'
+        : 'ph-article';
+    
     window.dispatchEvent(new CustomEvent('open-context-menu', {
         detail: {
             x: e.clientX,
@@ -168,7 +187,7 @@ function onArticleContextMenu(e, article) {
                 { label: article.is_read ? store.i18n.t('markAsUnread') : store.i18n.t('markAsRead'), action: 'toggleRead', icon: article.is_read ? 'ph-envelope' : 'ph-envelope-open' },
                 { label: article.is_favorite ? store.i18n.t('removeFromFavorites') : store.i18n.t('addToFavorites'), action: 'toggleFavorite', icon: article.is_favorite ? 'ph-star-fill' : 'ph-star' },
                 { separator: true },
-                { label: store.i18n.t('renderContent'), action: 'renderContent', icon: 'ph-article' },
+                { label: contentActionLabel, action: 'renderContent', icon: contentActionIcon },
                 { label: article.is_hidden ? store.i18n.t('unhideArticle') : store.i18n.t('hideArticle'), action: 'toggleHide', icon: article.is_hidden ? 'ph-eye' : 'ph-eye-slash' },
                 { separator: true },
                 { label: store.i18n.t('openInBrowser'), action: 'openBrowser', icon: 'ph-arrow-square-out' }

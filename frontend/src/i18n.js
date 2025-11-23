@@ -36,6 +36,7 @@ export const translations = {
         hideArticle: 'Hide Article',
         unhideArticle: 'Unhide Article',
         selectArticle: 'Select an article to start reading',
+        showOriginal: 'Show Original Webpage',
         
         // Settings Modal
         settingsTitle: 'Settings',
@@ -216,6 +217,7 @@ export const translations = {
         hideArticle: '隐藏文章',
         unhideArticle: '取消隐藏',
         selectArticle: '选择一篇文章开始阅读',
+        showOriginal: '显示原网页',
         
         // Settings Modal
         settingsTitle: '设置',
