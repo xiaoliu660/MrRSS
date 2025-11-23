@@ -172,7 +172,7 @@ onBeforeUnmount(() => {
                         <i :class="['ph', article.is_read ? 'ph-envelope-open' : 'ph-envelope']"></i>
                     </button>
                     <button @click="toggleFavorite" class="action-btn" :title="store.i18n.t('toggleFavorite')">
-                        <i :class="['ph', article.is_favorite ? 'ph-star-fill text-yellow-400' : 'ph-star']"></i>
+                        <i :class="['ph', article.is_favorite ? 'ph-star-fill text-yellow-400' : 'ph-star text-text-secondary']"></i>
                     </button>
                     <button @click="openOriginal" class="action-btn" :title="store.i18n.t('openInBrowser')">
                         <i class="ph ph-arrow-square-out"></i>
