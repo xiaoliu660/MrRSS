@@ -55,7 +55,8 @@ async function autoSave() {
                 max_article_age_days: props.settings.max_article_age_days.toString(),
                 language: props.settings.language,
                 theme: props.settings.theme,
-                show_hidden_articles: props.settings.show_hidden_articles.toString()
+                show_hidden_articles: props.settings.show_hidden_articles.toString(),
+                default_view_mode: props.settings.default_view_mode
             })
         });
         
@@ -72,6 +73,13 @@ async function autoSave() {
                 enabled: props.settings.translation_enabled,
                 targetLang: props.settings.target_language
             };
+            // Notify ArticleList about translation settings change
+            window.dispatchEvent(new CustomEvent('translation-settings-changed', {
+                detail: {
+                    enabled: props.settings.translation_enabled,
+                    targetLang: props.settings.target_language
+                }
+            }));
             // Refresh articles to show without translations, then re-translate if enabled
             store.fetchArticles();
         }
@@ -159,6 +167,19 @@ function formatLastUpdate(timestamp) {
                 <select v-model="settings.language" class="input-field w-32">
                     <option value="en">{{ store.i18n.t('english') }}</option>
                     <option value="zh">{{ store.i18n.t('chinese') }}</option>
+                </select>
+            </div>
+            <div class="setting-item mt-3">
+                <div class="flex-1 flex items-start gap-3">
+                    <i class="ph ph-article text-xl text-text-secondary mt-0.5"></i>
+                    <div class="flex-1">
+                        <div class="font-medium mb-1">{{ store.i18n.t('defaultViewMode') }}</div>
+                        <div class="text-xs text-text-secondary">{{ store.i18n.t('defaultViewModeDesc') }}</div>
+                    </div>
+                </div>
+                <select v-model="settings.default_view_mode" class="input-field w-48">
+                    <option value="original">{{ store.i18n.t('viewModeOriginal') }}</option>
+                    <option value="rendered">{{ store.i18n.t('viewModeRendered') }}</option>
                 </select>
             </div>
         </div>

@@ -78,6 +78,7 @@ func (db *DB) Init() error {
 	_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('theme', 'auto')`)
 	_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('last_article_update', '')`)
 	_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('show_hidden_articles', 'false')`)
+	_, _ = db.Exec(`INSERT OR IGNORE INTO settings (key, value) VALUES ('default_view_mode', 'original')`)
 	})
 	return err
 }

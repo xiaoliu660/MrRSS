@@ -20,7 +20,8 @@ const settings = ref({
     language: store.i18n.locale.value,
     theme: 'auto',
     last_article_update: '',
-    show_hidden_articles: false
+    show_hidden_articles: false,
+    default_view_mode: 'original'
 });
 
 const updateInfo = ref(null);
@@ -46,7 +47,8 @@ onMounted(async () => {
             language: data.language || store.i18n.locale.value,
             theme: data.theme || 'auto',
             last_article_update: data.last_article_update || '',
-            show_hidden_articles: data.show_hidden_articles === 'true'
+            show_hidden_articles: data.show_hidden_articles === 'true',
+            default_view_mode: data.default_view_mode || 'original'
         };
         // Apply the saved language
         if (data.language) {

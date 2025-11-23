@@ -1,17 +1,37 @@
 <script setup>
 import { store } from '../store.js';
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue';
+import { computed, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { BrowserOpenURL } from '../wailsjs/wailsjs/runtime/runtime.js';
 
 const article = computed(() => store.articles.find(a => a.id === store.currentArticleId));
 const showContent = ref(false); // Toggle between original webpage and RSS content
 const articleContent = ref(''); // Dynamically fetched content
 const isLoadingContent = ref(false); // Loading state
+const currentArticleId = ref(null); // Track which article content we've loaded
+const defaultViewMode = ref('original'); // Default view mode from settings
+
+// Watch for article changes and apply default view mode
+watch(() => store.currentArticleId, async (newId, oldId) => {
+    if (newId && newId !== oldId) {
+        // Reset content when switching articles
+        articleContent.value = '';
+        currentArticleId.value = null;
+        
+        // Apply default view mode
+        if (defaultViewMode.value === 'rendered') {
+            showContent.value = true;
+            await fetchArticleContent();
+        } else {
+            showContent.value = false;
+        }
+    }
+});
 
 function close() {
     store.currentArticleId = null;
     showContent.value = false;
     articleContent.value = '';
+    currentArticleId.value = null;
 }
 
 function toggleRead() {
@@ -34,8 +54,10 @@ function openOriginal() {
 
 async function toggleContentView() {
     if (!showContent.value) {
-        // Switching to content view - fetch content if not already loaded
-        if (!articleContent.value && article.value) {
+        // Switching to content view - fetch content if needed
+        if (!article.value) return;
+        // Check if we need to fetch content (different article or no content yet)
+        if (currentArticleId.value !== article.value.id) {
             await fetchArticleContent();
         }
     }
@@ -46,6 +68,7 @@ async function fetchArticleContent() {
     if (!article.value) return;
     
     isLoadingContent.value = true;
+    currentArticleId.value = article.value.id; // Track which article we're loading
     try {
         const res = await fetch(`/api/articles/content?id=${article.value.id}`);
         if (res.ok) {
@@ -65,14 +88,25 @@ async function fetchArticleContent() {
 
 // Listen for render content event from context menu
 async function handleRenderContent() {
-    if (!articleContent.value && article.value) {
+    if (!article.value) return;
+    // Check if we need to fetch content for this article
+    if (currentArticleId.value !== article.value.id) {
         await fetchArticleContent();
     }
     showContent.value = true;
 }
 
-onMounted(() => {
+onMounted(async () => {
     window.addEventListener('render-article-content', handleRenderContent);
+    
+    // Load default view mode from settings
+    try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        defaultViewMode.value = data.default_view_mode || 'original';
+    } catch (e) {
+        console.error('Error loading settings:', e);
+    }
 });
 
 onBeforeUnmount(() => {

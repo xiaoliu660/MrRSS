@@ -30,7 +30,39 @@ onMounted(async () => {
     } catch (e) {
         console.error('Error loading translation settings:', e);
     }
+    
+    // Listen for translation settings changes
+    window.addEventListener('translation-settings-changed', handleTranslationSettingsChange);
 });
+
+onBeforeUnmount(() => {
+    if (observer) {
+        observer.disconnect();
+        observer = null;
+    }
+    window.removeEventListener('translation-settings-changed', handleTranslationSettingsChange);
+});
+
+// Handle translation settings changes
+function handleTranslationSettingsChange(e) {
+    const { enabled, targetLang } = e.detail;
+    translationSettings.value = { enabled, targetLang };
+    
+    // Disconnect observer if translation is disabled
+    if (!enabled && observer) {
+        observer.disconnect();
+        observer = null;
+    }
+    // Set up observer if translation is enabled
+    else if (enabled && !observer) {
+        setupIntersectionObserver();
+        // Observe all current article cards
+        setTimeout(() => {
+            const cards = document.querySelectorAll('[data-article-id]');
+            cards.forEach(card => observer.observe(card));
+        }, 100);
+    }
+}
 
 // Intersection Observer for auto-translation
 let observer = null;
