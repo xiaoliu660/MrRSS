@@ -539,11 +539,22 @@ export function createI18n() {
     const t = (key, params = {}) => {
         let text = translations[locale.value]?.[key] || translations.en[key] || key;
         
+        // Special-case: for Chinese, the "andNMore" wording should include the
+        // currently-shown item as well (display n+1). Adjust the parameter
+        // before replacing placeholders so translations stay simple.
+        const paramValues = { ...params };
+        if (locale.value === 'zh' && key === 'andNMore' && paramValues.count !== undefined) {
+            const n = Number(paramValues.count);
+            if (!Number.isNaN(n)) {
+                paramValues.count = String(n + 1);
+            }
+        }
+
         // Replace placeholders like {count}, {name}, {error}
-        Object.keys(params).forEach(param => {
-            text = text.replace(`{${param}}`, params[param]);
+        Object.keys(paramValues).forEach(param => {
+            text = text.replace(`{${param}}`, paramValues[param]);
         });
-        
+
         return text;
     };
     
