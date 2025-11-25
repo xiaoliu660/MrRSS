@@ -207,13 +207,18 @@ const filteredArticles = computed(() => {
     return articles;
 });
 
+// Reset filter state
+function resetFilterState() {
+    filteredArticlesFromServer.value = [];
+    filterPage.value = 1;
+    filterHasMore.value = true;
+    filterTotal.value = 0;
+}
+
 // Fetch filtered articles from server with pagination
 async function fetchFilteredArticles(filters, append = false) {
     if (filters.length === 0) {
-        filteredArticlesFromServer.value = [];
-        filterPage.value = 1;
-        filterHasMore.value = true;
-        filterTotal.value = 0;
+        resetFilterState();
         return;
     }
     
@@ -270,15 +275,19 @@ async function loadMoreFilteredArticles() {
 // Filter handlers
 async function handleApplyFilters(filters) {
     activeFilters.value = filters;
-    await fetchFilteredArticles(filters, false);
+    if (filters.length === 0) {
+        // When clearing filters, reset to normal article list by refreshing store
+        resetFilterState();
+        store.page = 1;
+        await store.fetchArticles(false);
+    } else {
+        await fetchFilteredArticles(filters, false);
+    }
 }
 
 function clearAllFilters() {
     activeFilters.value = [];
-    filteredArticlesFromServer.value = [];
-    filterPage.value = 1;
-    filterHasMore.value = true;
-    filterTotal.value = 0;
+    resetFilterState();
 }
 
 function onArticleContextMenu(e, article) {

@@ -281,7 +281,10 @@ function close() {
                                             <span class="dropdown-text truncate">{{ getMultiSelectDisplayText(condition, 'feedName') }}</span>
                                             <span class="dropdown-arrow">▼</span>
                                         </button>
-                                        <div v-if="openDropdownIndex === index" class="dropdown-menu" role="listbox" :aria-label="store.i18n.t('feedName')">
+                                        <div v-if="openDropdownIndex === index" 
+                                             :class="['dropdown-menu', index === 0 ? 'dropdown-down' : 'dropdown-up']" 
+                                             role="listbox" 
+                                             :aria-label="store.i18n.t('feedName')">
                                             <div v-for="name in feedNames" :key="name" 
                                                  @click.stop="toggleMultiSelectValue(index, name)"
                                                  role="option"
@@ -308,7 +311,10 @@ function close() {
                                             <span class="dropdown-text truncate">{{ getMultiSelectDisplayText(condition, 'feedCategory') }}</span>
                                             <span class="dropdown-arrow">▼</span>
                                         </button>
-                                        <div v-if="openDropdownIndex === index" class="dropdown-menu" role="listbox" :aria-label="store.i18n.t('feedCategory')">
+                                        <div v-if="openDropdownIndex === index" 
+                                             :class="['dropdown-menu', index === 0 ? 'dropdown-down' : 'dropdown-up']" 
+                                             role="listbox" 
+                                             :aria-label="store.i18n.t('feedCategory')">
                                             <div v-for="cat in feedCategories" :key="cat" 
                                                  @click.stop="toggleMultiSelectValue(index, cat)"
                                                  role="option"
@@ -430,8 +436,14 @@ function close() {
     @apply text-text-secondary text-xs ml-2;
 }
 .dropdown-menu {
-    @apply absolute bottom-full left-0 right-0 mb-1 border border-border rounded-md bg-bg-primary;
+    @apply absolute left-0 right-0 border border-border rounded-md bg-bg-primary;
     @apply max-h-40 overflow-y-auto z-50 shadow-lg;
+}
+.dropdown-menu.dropdown-up {
+    @apply bottom-full mb-1;
+}
+.dropdown-menu.dropdown-down {
+    @apply top-full mt-1;
 }
 .dropdown-option {
     @apply flex items-center gap-2 px-3 py-2 cursor-pointer text-sm text-text-primary hover:bg-bg-tertiary;
