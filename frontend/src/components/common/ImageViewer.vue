@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, type Ref, type CSSProperties } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PhX, PhMagnifyingGlassMinus, PhMagnifyingGlassPlus } from '@phosphor-icons/vue';
+import {
+  PhX,
+  PhMagnifyingGlassMinus,
+  PhMagnifyingGlassPlus,
+  PhDownloadSimple,
+} from '@phosphor-icons/vue';
 
 const { t } = useI18n();
 
@@ -10,7 +15,7 @@ interface Props {
   alt?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   close: [];
@@ -90,6 +95,60 @@ function handleKeyDown(e: KeyboardEvent) {
     zoomIn();
   } else if (e.key === '-' || e.key === '_') {
     zoomOut();
+  } else if (e.key === 's' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    downloadImage();
+  }
+}
+
+// Download image to local storage
+async function downloadImage() {
+  try {
+    const response = await fetch(props.src);
+
+    // Check if the response is successful
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+
+    // Extract and sanitize filename from URL
+    let filename = 'image';
+    try {
+      const url = new URL(props.src);
+      const pathname = url.pathname;
+      const pathSegments = pathname.split('/').filter((segment) => segment.length > 0);
+      if (pathSegments.length > 0) {
+        const lastSegment = pathSegments[pathSegments.length - 1];
+        // Remove query params and sanitize filename
+        filename = lastSegment.split('?')[0].replace(/[^a-zA-Z0-9._-]/g, '_') || 'image';
+      }
+    } catch {
+      // If URL parsing fails, use default filename
+      filename = 'image';
+    }
+
+    // Ensure it has a valid extension based on MIME type
+    if (!filename.match(/\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i)) {
+      const mimeType = blob.type;
+      const ext = mimeType.split('/')[1]?.replace('jpeg', 'jpg') || 'png';
+      filename = `${filename}.${ext}`;
+    }
+
+    // Create download link
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Failed to download image:', error);
+    // Fallback: open image in new tab for manual saving
+    window.open(props.src, '_blank');
   }
 }
 
@@ -100,14 +159,10 @@ const imageStyle = computed<CSSProperties>(() => ({
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeyDown);
-  document.addEventListener('mousemove', onDrag);
-  document.addEventListener('mouseup', stopDrag);
 });
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeyDown);
-  document.removeEventListener('mousemove', onDrag);
-  document.removeEventListener('mouseup', stopDrag);
 });
 </script>
 
@@ -135,6 +190,9 @@ onUnmounted(() => {
       >
         <PhMagnifyingGlassPlus :size="20" />
       </button>
+      <button @click="downloadImage" class="control-btn" :title="t('downloadImage')">
+        <PhDownloadSimple :size="20" />
+      </button>
       <button @click="close" class="control-btn" :title="t('close')">
         <PhX :size="20" />
       </button>
@@ -142,33 +200,43 @@ onUnmounted(() => {
 
     <!-- Image Container -->
     <div
-      class="relative w-full h-full flex items-center justify-center overflow-hidden"
+      class="relative w-full h-full flex items-center justify-center overflow-hidden image-container"
       @click.stop
       @wheel="handleWheel"
+      @mousedown="startDrag"
+      @mousemove="onDrag"
+      @mouseup="stopDrag"
+      @mouseleave="stopDrag"
     >
       <img
         ref="imageRef"
         :src="src"
         :alt="alt"
         :style="imageStyle"
-        @mousedown="startDrag"
         @dragstart.prevent
-        class="max-w-full max-h-full object-contain transition-transform select-none"
-        :class="{ 'transition-none': isDragging }"
+        class="max-w-full max-h-full object-contain select-none"
+        :class="[isDragging ? '' : 'transition-transform duration-150']"
       />
     </div>
 
     <!-- Help text -->
     <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm text-center px-4">
-      <p class="hidden sm:block">{{ t('imageViewerHelp') }}</p>
+      <p class="hidden sm:block">{{ t('imageViewerHelpExtended') }}</p>
     </div>
   </div>
 </template>
 
 <style scoped>
 .control-btn {
-  @apply bg-bg-primary text-text-primary px-3 py-2 rounded-lg hover:bg-bg-primary transition-colors backdrop-blur-sm flex items-center justify-center min-w-[40px];
-  background-color: rgba(var(--color-bg-primary-rgb, 255, 255, 255), 0.9);
+  @apply px-3 py-2 rounded-lg transition-colors backdrop-blur-sm flex items-center justify-center min-w-[40px];
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #212529;
+}
+
+/* Dark mode support */
+:global(.dark-mode) .control-btn {
+  background-color: rgba(45, 45, 45, 0.9);
+  color: #e0e0e0;
 }
 
 .control-btn:disabled {
@@ -176,6 +244,19 @@ onUnmounted(() => {
 }
 
 .control-btn:not(:disabled):hover {
-  @apply bg-bg-secondary;
+  background-color: rgba(240, 240, 240, 0.95);
+}
+
+:global(.dark-mode) .control-btn:not(:disabled):hover {
+  background-color: rgba(60, 60, 60, 0.95);
+}
+
+/* Image container cursor */
+.image-container {
+  cursor: default;
+}
+
+.image-container.dragging {
+  cursor: grabbing;
 }
 </style>

@@ -34,6 +34,9 @@ export interface TranslationMessages {
   zoomIn: string;
   zoomOut: string;
   imageViewerHelp: string;
+  imageViewerHelpExtended: string;
+  downloadImage: string;
+  viewImage: string;
 
   // Context Menu
   unsubscribe: string;

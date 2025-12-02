@@ -44,6 +44,8 @@ const iconMap: Record<string, string> = {
   'ph-arrow-square-out': 'PhArrowSquareOut',
   PhMagnifyingGlass: 'PhMagnifyingGlass',
   PhArrowsClockwise: 'PhArrowsClockwise',
+  PhMagnifyingGlassPlus: 'PhMagnifyingGlassPlus',
+  PhDownloadSimple: 'PhDownloadSimple',
 };
 
 // Get icon component from icon string
