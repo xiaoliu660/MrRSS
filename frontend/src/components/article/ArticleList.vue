@@ -2,7 +2,14 @@
 import { useAppStore } from '@/stores/app';
 import { useI18n } from 'vue-i18n';
 import { ref, computed, onMounted, onBeforeUnmount, watch, type Ref } from 'vue';
-import { PhCheckCircle, PhArrowClockwise, PhList, PhSpinner, PhFunnel } from '@phosphor-icons/vue';
+import {
+  PhCheckCircle,
+  PhArrowClockwise,
+  PhList,
+  PhSpinner,
+  PhFunnel,
+  PhTrash,
+} from '@phosphor-icons/vue';
 import ArticleFilterModal from '../modals/filter/ArticleFilterModal.vue';
 import ArticleItem from './ArticleItem.vue';
 import { useArticleTranslation } from '@/composables/article/useArticleTranslation';
@@ -228,6 +235,18 @@ async function markAllAsRead(): Promise<void> {
   await store.markAllAsRead();
   window.showToast(t('markedAllAsRead'), 'success');
 }
+
+async function clearReadLater(): Promise<void> {
+  try {
+    const res = await fetch('/api/articles/clear-read-later', { method: 'POST' });
+    if (res.ok) {
+      await store.fetchArticles();
+      window.showToast(t('clearedReadLater'), 'success');
+    }
+  } catch (e) {
+    console.error('Error clearing read later:', e);
+  }
+}
 </script>
 
 <template>
@@ -238,6 +257,15 @@ async function markAllAsRead(): Promise<void> {
       <div class="flex items-center justify-between mb-2 sm:mb-3">
         <h3 class="m-0 text-base sm:text-lg font-semibold">{{ t('articles') }}</h3>
         <div class="flex items-center gap-1 sm:gap-2">
+          <!-- Clear Read Later button - only shown when viewing Read Later list -->
+          <button
+            v-if="store.currentFilter === 'readLater'"
+            @click="clearReadLater"
+            class="text-text-secondary hover:text-red-500 hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors"
+            :title="t('clearReadLater')"
+          >
+            <PhTrash :size="20" class="sm:w-6 sm:h-6" />
+          </button>
           <button
             @click="markAllAsRead"
             class="text-text-secondary hover:text-text-primary hover:bg-bg-tertiary p-1 sm:p-1.5 rounded transition-colors"

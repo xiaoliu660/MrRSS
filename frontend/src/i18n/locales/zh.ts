@@ -248,6 +248,8 @@ const zh: TranslationMessages = {
   feedsMovedSuccess: '订阅移动成功',
   unsubscribedSuccess: '取消订阅成功',
   markedAllAsRead: '所有文章已标记为已读',
+  clearReadLater: '清空稍后阅读',
+  clearedReadLater: '稍后阅读列表已清空',
   databaseCleanedSuccess: '数据库清理成功。已删除 {count} 篇文章。',
   opmlImportedSuccess: 'OPML 已导入。订阅源即将显示。',
   errorSavingSettings: '保存设置时出错',

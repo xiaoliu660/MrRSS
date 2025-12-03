@@ -66,11 +66,11 @@ function getFavicon(url: string): string {
 }
 .unread-badge {
   @apply text-[9px] sm:text-[10px] font-semibold rounded-full min-w-[14px] sm:min-w-[16px] h-[14px] sm:h-[16px] px-0.5 sm:px-1 flex items-center justify-center;
-  background-color: rgba(200, 200, 200, 0.3);
-  color: #555555;
+  background-color: rgba(120, 120, 120, 0.25);
+  color: #444444;
 }
 :global(.dark-mode) .unread-badge {
-  background-color: rgba(160, 160, 160, 0.25);
-  color: #dddddd;
+  background-color: rgba(180, 180, 180, 0.3);
+  color: #ffffff;
 }
 </style>
