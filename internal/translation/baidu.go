@@ -2,10 +2,11 @@ package translation
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"net/http"
 	"net/url"
 	"time"
@@ -36,10 +37,16 @@ func (t *BaiduTranslator) Translate(text, targetLang string) (string, error) {
 	// Baidu API uses different language codes
 	baiduLang := mapToBaiduLang(targetLang)
 
-	// Generate salt (random number)
-	salt := fmt.Sprintf("%d", rand.Int())
+	// Generate cryptographically secure random salt
+	n, err := rand.Int(rand.Reader, big.NewInt(1000000000))
+	if err != nil {
+		return "", fmt.Errorf("failed to generate salt: %w", err)
+	}
+	salt := n.String()
 
 	// Generate sign: md5(appid+q+salt+key)
+	// Note: MD5 is used here because it's required by the Baidu Translate API specification.
+	// This is not for security purposes but for API signature verification.
 	signStr := t.AppID + text + salt + t.SecretKey
 	hash := md5.Sum([]byte(signStr))
 	sign := hex.EncodeToString(hash[:])
