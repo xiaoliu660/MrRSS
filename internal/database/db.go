@@ -132,6 +132,7 @@ func initSchema(db *sql.DB) error {
 		url TEXT UNIQUE,
 		image_url TEXT,
 		audio_url TEXT DEFAULT '',
+		video_url TEXT DEFAULT '',
 		translated_title TEXT,
 		content TEXT DEFAULT '',
 		published_at DATETIME,

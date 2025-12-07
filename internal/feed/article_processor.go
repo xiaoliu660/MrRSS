@@ -125,8 +125,10 @@ func extractAudioURL(item *gofeed.Item) string {
 
 // extractVideoURL extracts the video URL from a feed item (for YouTube videos)
 func extractVideoURL(item *gofeed.Item) string {
-	// Check if this is a YouTube link
-	if item.Link != "" && (strings.Contains(item.Link, "youtube.com/watch") || strings.Contains(item.Link, "youtu.be/")) {
+	// Check if this is a YouTube link (watch, youtu.be, or shorts)
+	if item.Link != "" && (strings.Contains(item.Link, "youtube.com/watch") || 
+		strings.Contains(item.Link, "youtu.be/") || 
+		strings.Contains(item.Link, "youtube.com/shorts/")) {
 		// Extract video ID from YouTube URL
 		videoID := extractYouTubeVideoID(item.Link)
 		if videoID != "" {
