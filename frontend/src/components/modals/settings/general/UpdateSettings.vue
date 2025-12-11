@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { PhArrowClockwise, PhClock, PhPower } from '@phosphor-icons/vue';
+import { PhArrowClockwise, PhArrowsClockwise, PhClock, PhPower } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
 import { formatRelativeTime } from '@/utils/date';
 
@@ -28,7 +28,7 @@ function formatLastUpdate(timestamp: string): string {
     </label>
     <div class="setting-item">
       <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhClock :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
+        <PhArrowsClockwise :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
         <div class="flex-1 min-w-0">
           <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
             {{ t('refreshMode') }}
@@ -51,24 +51,30 @@ function formatLastUpdate(timestamp: string): string {
       </select>
     </div>
 
-    <div v-if="settings.refresh_mode === 'fixed'" class="setting-item mt-2 sm:mt-3">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhClock :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-            {{ t('autoUpdateInterval') }}
-          </div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('autoUpdateIntervalDesc') }}
+    <!-- Auto Update Interval (shown when fixed mode is selected) -->
+    <div
+      v-if="settings.refresh_mode === 'fixed'"
+      class="mt-2 sm:mt-3 ml-4 sm:ml-6 space-y-2 sm:space-y-3 border-l-2 border-border pl-3 sm:pl-4"
+    >
+      <div class="sub-setting-item">
+        <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
+          <PhClock :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
+          <div class="flex-1 min-w-0">
+            <div class="font-medium mb-0 sm:mb-1 text-xs sm:text-sm">
+              {{ t('autoUpdateInterval') }}
+            </div>
+            <div class="text-[10px] sm:text-xs text-text-secondary hidden sm:block">
+              {{ t('autoUpdateIntervalDesc') }}
+            </div>
           </div>
         </div>
+        <input
+          type="number"
+          v-model="settings.update_interval"
+          min="1"
+          class="input-field w-16 sm:w-20 text-center text-xs sm:text-sm"
+        />
       </div>
-      <input
-        type="number"
-        v-model="settings.update_interval"
-        min="1"
-        class="input-field w-16 sm:w-20 text-center text-xs sm:text-sm"
-      />
     </div>
 
     <div class="setting-item mt-2 sm:mt-3">
@@ -104,5 +110,8 @@ function formatLastUpdate(timestamp: string): string {
 }
 .setting-item {
   @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
+}
+.sub-setting-item {
+  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-2.5 rounded-md bg-bg-tertiary;
 }
 </style>

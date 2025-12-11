@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { PhShield, PhGlobe, PhLock, PhUser, PhKey } from '@phosphor-icons/vue';
+import { PhShield, PhGlobe, PhPlug, PhLock, PhUser, PhKey } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
 
 const { t } = useI18n();
@@ -38,10 +38,14 @@ defineProps<Props>();
     </div>
 
     <!-- Proxy Settings (shown when proxy is enabled) -->
-    <div v-if="settings.proxy_enabled" class="mt-2 sm:mt-3 space-y-2 sm:space-y-3">
+    <div
+      v-if="settings.proxy_enabled"
+      class="mt-2 sm:mt-3 ml-4 sm:ml-6 space-y-2 sm:space-y-3 pl-3 sm:pl-4 border-l-2 border-border"
+    >
       <!-- Proxy Type -->
-      <div class="setting-item">
+      <div class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
+          <PhPlug :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
             <div class="font-medium mb-0 sm:mb-1 text-xs sm:text-sm">
               {{ t('proxyType') }}
@@ -59,12 +63,12 @@ defineProps<Props>();
       </div>
 
       <!-- Proxy Host -->
-      <div class="setting-item">
+      <div class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
           <PhGlobe :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
             <div class="font-medium mb-0 sm:mb-1 text-xs sm:text-sm">
-              {{ t('proxyHost') }}
+              {{ t('proxyHost') }} <span class="text-red-500">*</span>
             </div>
             <div class="text-[10px] sm:text-xs text-text-secondary hidden sm:block">
               {{ t('proxyHostDesc') }}
@@ -75,17 +79,20 @@ defineProps<Props>();
           type="text"
           v-model="settings.proxy_host"
           :placeholder="t('proxyHostPlaceholder')"
-          class="input-field w-36 sm:w-48 text-xs sm:text-sm"
+          :class="[
+            'input-field w-36 sm:w-48 text-xs sm:text-sm',
+            settings.proxy_enabled && !settings.proxy_host?.trim() ? 'border-red-500' : '',
+          ]"
         />
       </div>
 
       <!-- Proxy Port -->
-      <div class="setting-item">
+      <div class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
           <PhLock :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
             <div class="font-medium mb-0 sm:mb-1 text-xs sm:text-sm">
-              {{ t('proxyPort') }}
+              {{ t('proxyPort') }} <span class="text-red-500">*</span>
             </div>
             <div class="text-[10px] sm:text-xs text-text-secondary hidden sm:block">
               {{ t('proxyPortDesc') }}
@@ -96,12 +103,15 @@ defineProps<Props>();
           type="text"
           v-model="settings.proxy_port"
           :placeholder="t('proxyPortPlaceholder')"
-          class="input-field w-20 sm:w-24 text-center text-xs sm:text-sm"
+          :class="[
+            'input-field w-20 sm:w-24 text-center text-xs sm:text-sm',
+            settings.proxy_enabled && !settings.proxy_port?.trim() ? 'border-red-500' : '',
+          ]"
         />
       </div>
 
       <!-- Proxy Username -->
-      <div class="setting-item">
+      <div class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
           <PhUser :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
@@ -122,7 +132,7 @@ defineProps<Props>();
       </div>
 
       <!-- Proxy Password -->
-      <div class="setting-item">
+      <div class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
           <PhKey :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
@@ -161,5 +171,8 @@ defineProps<Props>();
 }
 .setting-item {
   @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
+}
+.sub-setting-item {
+  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-2.5 rounded-md bg-bg-tertiary;
 }
 </style>

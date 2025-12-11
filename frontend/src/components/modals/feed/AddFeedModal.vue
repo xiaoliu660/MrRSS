@@ -327,7 +327,8 @@ async function openScriptsFolder() {
 
         <!-- Proxy Settings -->
         <div class="mb-3 sm:mb-4">
-          <label class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
+          <label
+            class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
             >{{ t('feedProxy') }}</label
           >
           <p class="text-[10px] sm:text-xs text-text-secondary mb-2">{{ t('feedProxyDesc') }}</p>
@@ -347,7 +348,8 @@ async function openScriptsFolder() {
 
         <!-- Refresh Interval -->
         <div class="mb-3 sm:mb-4">
-          <label class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
+          <label
+            class="block mb-1 sm:mb-1.5 font-semibold text-xs sm:text-sm text-text-secondary"
             >{{ t('feedRefreshInterval') }}</label
           >
           <p class="text-[10px] sm:text-xs text-text-secondary mb-2">

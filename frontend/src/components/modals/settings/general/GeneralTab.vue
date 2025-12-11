@@ -24,7 +24,8 @@ const settingsRef = toRef(props, 'settings');
 useSettingsAutoSave(settingsRef);
 
 // Use validation composable
-const { isValid, isTranslationValid, isSummaryValid } = useSettingsValidation(settingsRef);
+const { isValid, isTranslationValid, isSummaryValid, isProxyValid } =
+  useSettingsValidation(settingsRef);
 </script>
 
 <template>
@@ -46,6 +47,10 @@ const { isValid, isTranslationValid, isSummaryValid } = useSettingsValidation(se
           <span v-if="!isTranslationValid && !isSummaryValid"> • </span>
           <span v-if="!isSummaryValid">
             {{ t('summaryCredentialsRequired') }}
+          </span>
+          <span v-if="(!isTranslationValid || !isSummaryValid) && !isProxyValid"> • </span>
+          <span v-if="!isProxyValid">
+            {{ t('proxyCredentialsRequired') }}
           </span>
         </div>
       </div>
