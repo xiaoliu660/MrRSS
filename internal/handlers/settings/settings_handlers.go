@@ -241,9 +241,8 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		h.DB.SetSetting("proxy_username", req.ProxyUsername)
 		h.DB.SetSetting("proxy_password", req.ProxyPassword)
 
-		if req.GoogleTranslateEndpoint != "" {
-			h.DB.SetSetting("google_translate_endpoint", req.GoogleTranslateEndpoint)
-		}
+		// Always update google_translate_endpoint as it might be reset to default
+		h.DB.SetSetting("google_translate_endpoint", req.GoogleTranslateEndpoint)
 
 		if req.StartupOnBoot != "" {
 			// Get current value to check if it changed
