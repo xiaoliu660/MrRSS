@@ -223,12 +223,13 @@ func (f *Fetcher) FetchFeed(ctx context.Context, feed models.Feed) {
 			return
 		}
 
-		// Create parser with custom HTTP client
-		parser := gofeed.NewParser()
-		parser.Client = httpClient
+		// Set HTTP client on parser if it's a gofeed parser
+		if gp, ok := f.fp.(*gofeed.Parser); ok {
+			gp.Client = httpClient
+		}
 
-		// Use traditional URL-based fetching with proxy support
-		parsedFeed, err = parser.ParseURLWithContext(feed.URL, ctx)
+		// Use parser to fetch feed
+		parsedFeed, err = f.fp.ParseURLWithContext(feed.URL, ctx)
 		if err != nil {
 			log.Printf("Error parsing feed %s: %v", feed.URL, err)
 			f.db.UpdateFeedError(feed.ID, err.Error())
