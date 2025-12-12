@@ -5,6 +5,7 @@
   "theme": "auto",
   "default_view_mode": "rendered",
   "startup_on_boot": false,
+  "close_to_tray": true,
   "show_hidden_articles": false,
   "translation_enabled": false,
   "target_language": "zh",
@@ -44,4 +45,5 @@
   "window_width": "1024",
   "window_height": "768",
   "window_maximized": "false"
+  "show_article_preview_images": true
 }
