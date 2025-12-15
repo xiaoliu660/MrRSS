@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhGlobe, PhArticle, PhPackage, PhKey, PhLink, PhRobot } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
@@ -15,18 +14,6 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   'update:settings': [settings: SettingsData];
 }>();
-
-// Create local reactive copy
-const localSettings = ref<SettingsData>({ ...props.settings });
-
-// Watch for changes and emit updates
-watch(
-  localSettings,
-  (newSettings) => {
-    emit('update:settings', { ...newSettings });
-  },
-  { deep: true }
-);
 </script>
 
 <template>
@@ -49,11 +36,22 @@ watch(
           </div>
         </div>
       </div>
-      <input v-model="localSettings.translation_enabled" type="checkbox" class="toggle" />
+      <input
+        :checked="props.settings.translation_enabled"
+        type="checkbox"
+        class="toggle"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              translation_enabled: (e.target as HTMLInputElement).checked,
+            })
+        "
+      />
     </div>
 
     <div
-      v-if="settings.translation_enabled"
+      v-if="props.settings.translation_enabled"
       class="ml-2 sm:ml-4 space-y-2 sm:space-y-3 border-l-2 border-border pl-2 sm:pl-4"
     >
       <div class="sub-setting-item">
@@ -67,8 +65,15 @@ watch(
           </div>
         </div>
         <select
-          v-model="localSettings.translation_provider"
+          :value="props.settings.translation_provider"
           class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                translation_provider: (e.target as HTMLSelectElement).value,
+              })
+          "
         >
           <option value="google">{{ t('googleTranslate') }}</option>
           <option value="deepl">{{ t('deeplApi') }}</option>
@@ -78,7 +83,7 @@ watch(
       </div>
 
       <!-- Google Translate Endpoint -->
-      <div v-if="settings.translation_provider === 'google'" class="sub-setting-item">
+      <div v-if="props.settings.translation_provider === 'google'" class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
           <PhLink :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
@@ -89,8 +94,15 @@ watch(
           </div>
         </div>
         <select
-          v-model="localSettings.google_translate_endpoint"
+          :value="props.settings.google_translate_endpoint"
           class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                google_translate_endpoint: (e.target as HTMLSelectElement).value,
+              })
+          "
         >
           <option value="translate.googleapis.com">
             {{ t('googleTranslateEndpointDefault') }}
@@ -100,7 +112,7 @@ watch(
       </div>
 
       <!-- DeepL API Key -->
-      <div v-if="settings.translation_provider === 'deepl'" class="sub-setting-item">
+      <div v-if="props.settings.translation_provider === 'deepl'" class="sub-setting-item">
         <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
           <PhKey :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
           <div class="flex-1 min-w-0">
@@ -113,22 +125,29 @@ watch(
           </div>
         </div>
         <input
-          v-model="localSettings.deepl_api_key"
+          :value="props.settings.deepl_api_key"
           type="password"
           :placeholder="t('deeplApiKeyPlaceholder')"
           :class="[
             'input-field w-32 sm:w-48 text-xs sm:text-sm',
-            settings.translation_enabled &&
-            settings.translation_provider === 'deepl' &&
-            !settings.deepl_api_key?.trim()
+            props.settings.translation_enabled &&
+            props.settings.translation_provider === 'deepl' &&
+            !props.settings.deepl_api_key?.trim()
               ? 'border-red-500'
               : '',
           ]"
+          @input="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                deepl_api_key: (e.target as HTMLInputElement).value,
+              })
+          "
         />
       </div>
 
       <!-- Baidu Translate Settings -->
-      <template v-if="settings.translation_provider === 'baidu'">
+      <template v-if="props.settings.translation_provider === 'baidu'">
         <div class="sub-setting-item">
           <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
             <PhKey :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
@@ -142,17 +161,24 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.baidu_app_id"
+            :value="props.settings.baidu_app_id"
             type="text"
             :placeholder="t('baiduAppIdPlaceholder')"
             :class="[
               'input-field w-32 sm:w-48 text-xs sm:text-sm',
-              settings.translation_enabled &&
-              settings.translation_provider === 'baidu' &&
-              !settings.baidu_app_id?.trim()
+              props.settings.translation_enabled &&
+              props.settings.translation_provider === 'baidu' &&
+              !props.settings.baidu_app_id?.trim()
                 ? 'border-red-500'
                 : '',
             ]"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  baidu_app_id: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item">
@@ -168,23 +194,30 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.baidu_secret_key"
+            :value="props.settings.baidu_secret_key"
             type="password"
             :placeholder="t('baiduSecretKeyPlaceholder')"
             :class="[
               'input-field w-32 sm:w-48 text-xs sm:text-sm',
-              settings.translation_enabled &&
-              settings.translation_provider === 'baidu' &&
-              !settings.baidu_secret_key?.trim()
+              props.settings.translation_enabled &&
+              props.settings.translation_provider === 'baidu' &&
+              !props.settings.baidu_secret_key?.trim()
                 ? 'border-red-500'
                 : '',
             ]"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  baidu_secret_key: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
       </template>
 
       <!-- AI Translation Settings -->
-      <template v-if="settings.translation_provider === 'ai'">
+      <template v-if="props.settings.translation_provider === 'ai'">
         <div class="sub-setting-item">
           <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
             <PhKey :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
@@ -198,17 +231,24 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.ai_api_key"
+            :value="props.settings.ai_api_key"
             type="password"
             :placeholder="t('aiApiKeyPlaceholder')"
             :class="[
               'input-field w-32 sm:w-48 text-xs sm:text-sm',
-              settings.translation_enabled &&
-              settings.translation_provider === 'ai' &&
-              !settings.ai_api_key?.trim()
+              props.settings.translation_enabled &&
+              props.settings.translation_provider === 'ai' &&
+              !props.settings.ai_api_key?.trim()
                 ? 'border-red-500'
                 : '',
             ]"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  ai_api_key: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item">
@@ -222,10 +262,17 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.ai_endpoint"
+            :value="props.settings.ai_endpoint"
             type="text"
             :placeholder="t('aiEndpointPlaceholder')"
             class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  ai_endpoint: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item">
@@ -239,10 +286,17 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.ai_model"
+            :value="props.settings.ai_model"
             type="text"
             :placeholder="t('aiModelPlaceholder')"
             class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  ai_model: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item flex-col items-stretch gap-2">
@@ -256,9 +310,16 @@ watch(
             </div>
           </div>
           <textarea
-            v-model="localSettings.ai_system_prompt"
+            :value="props.settings.ai_system_prompt"
             class="input-field w-full text-xs sm:text-sm resize-none"
             rows="3"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  ai_system_prompt: (e.target as HTMLTextAreaElement).value,
+                })
+            "
           />
         </div>
       </template>
@@ -274,8 +335,15 @@ watch(
           </div>
         </div>
         <select
-          v-model="localSettings.target_language"
+          :value="props.settings.target_language"
           class="input-field w-24 sm:w-48 text-xs sm:text-sm"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                target_language: (e.target as HTMLSelectElement).value,
+              })
+          "
         >
           <option value="en">{{ t('english') }}</option>
           <option value="es">{{ t('spanish') }}</option>

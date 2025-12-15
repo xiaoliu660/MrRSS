@@ -841,6 +841,162 @@ onUnmounted(() => {
 - Clear timeout on unmount to prevent memory leaks
 - Apply settings immediately for better UX
 
+### Settings Component Pattern
+
+**⚠️ CRITICAL PATTERN**: When creating settings components that receive props and emit updates, follow this pattern to avoid reactivity issues.
+
+#### ❌ **WRONG Pattern** (DO NOT USE)
+
+```vue
+<script setup lang="ts">
+import { ref, watch } from 'vue';
+
+const props = defineProps<{ settings: SettingsData }>();
+const emit = defineEmits<{ 'update:settings': [settings: SettingsData] }>();
+
+// ❌ BAD: Creating a local copy that won't sync with prop changes
+const localSettings = ref({ ...props.settings });
+
+// ❌ BAD: Watching local copy and emitting
+watch(localSettings, (newSettings) => {
+  emit('update:settings', { ...newSettings });
+}, { deep: true });
+</script>
+
+<template>
+  <!-- ❌ BAD: v-model bound to localSettings -->
+  <input v-model="localSettings.some_field" />
+
+  <!-- ❌ BAD: v-if checking props.settings while v-model uses localSettings -->
+  <div v-if="settings.some_enabled">
+    <input v-model="localSettings.some_value" />
+  </div>
+</template>
+```
+
+**Problems with this approach**:
+1. `localSettings` is a shallow copy that doesn't sync when `props.settings` changes
+2. User modifies localSettings → emits to parent → parent updates → **but localSettings doesn't update**
+3. v-if conditions checking different data source than v-model causes UI inconsistencies
+4. Closing and reopening settings shows stale values
+
+#### ✅ **CORRECT Pattern** (USE THIS)
+
+```vue
+<script setup lang="ts">
+const props = defineProps<{ settings: SettingsData }>();
+const emit = defineEmits<{ 'update:settings': [settings: SettingsData] }>();
+</script>
+
+<template>
+  <!-- ✅ GOOD: Direct binding with event handlers -->
+
+  <!-- Checkbox/Toggle -->
+  <input
+    :checked="props.settings.some_enabled"
+    type="checkbox"
+    class="toggle"
+    @change="
+      (e) =>
+        emit('update:settings', {
+          ...props.settings,
+          some_enabled: (e.target as HTMLInputElement).checked,
+        })
+    "
+  />
+
+  <!-- Text Input -->
+  <input
+    :value="props.settings.some_field"
+    type="text"
+    @input="
+      (e) =>
+        emit('update:settings', {
+          ...props.settings,
+          some_field: (e.target as HTMLInputElement).value,
+        })
+    "
+  />
+
+  <!-- Number Input -->
+  <input
+    :value="props.settings.some_number"
+    type="number"
+    @input="
+      (e) =>
+        emit('update:settings', {
+          ...props.settings,
+          some_number: parseInt((e.target as HTMLInputElement).value) || 0,
+        })
+    "
+  />
+
+  <!-- Select/Dropdown -->
+  <select
+    :value="props.settings.some_option"
+    @change="
+      (e) =>
+        emit('update:settings', {
+          ...props.settings,
+          some_option: (e.target as HTMLSelectElement).value,
+        })
+    "
+  >
+    <option value="option1">Option 1</option>
+    <option value="option2">Option 2</option>
+  </select>
+
+  <!-- Textarea -->
+  <textarea
+    :value="props.settings.some_text"
+    @input="
+      (e) =>
+        emit('update:settings', {
+          ...props.settings,
+          some_text: (e.target as HTMLTextAreaElement).value,
+        })
+    "
+  />
+
+  <!-- Conditional rendering uses same data source -->
+  <div v-if="props.settings.some_enabled">
+    <input
+      :value="props.settings.some_value"
+      type="text"
+      @input="
+        (e) =>
+          emit('update:settings', {
+            ...props.settings,
+            some_value: (e.target as HTMLInputElement).value,
+          })
+      "
+    />
+  </div>
+</template>
+```
+
+**Benefits of this approach**:
+1. ✅ Single source of truth (`props.settings`)
+2. ✅ Real-time reactivity - changes immediately reflected
+3. ✅ v-if conditions and bindings use same data source
+4. ✅ No synchronization issues
+5. ✅ Settings persist correctly when closing and reopening
+
+**Reference Components**:
+- ✅ `DatabaseSettings.vue` - Correct pattern
+- ✅ `AppearanceSettings.vue` - Correct pattern
+- ✅ `TranslationSettings.vue` - Fixed (was broken)
+- ✅ `UpdateSettings.vue` - Fixed (was broken)
+- ✅ `SummarySettings.vue` - Fixed (was broken)
+- ✅ `ProxySettings.vue` - Fixed (was broken)
+
+**Common Mistakes to Avoid**:
+- ❌ Don't create `localSettings` ref as a copy of props
+- ❌ Don't use `v-model` on props-based data (use `:value` + `@input`)
+- ❌ Don't mix `v-if="props.settings.x"` with `v-model="localSettings.x"`
+- ❌ Don't forget to spread `...props.settings` when emitting updates
+- ❌ Don't use `watch()` to sync localSettings with props (just don't use localSettings at all)
+
 ## Styling Patterns
 
 ### Semantic Color Classes

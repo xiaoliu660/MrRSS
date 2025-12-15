@@ -1,20 +1,22 @@
 {
   "name": "MrRSS",
-  "version": "1.2.18",
+  "version": "1.2.19",
   "author": {
     "name": "MrRSS Developer",
     "email": "dev@mrrss.app"
   },
   "info": {
     "productName": "MrRSS",
-    "productVersion": "1.2.18",
+    "productVersion": "1.2.19",
     "companyName": "MrRSS Team",
     "copyright": "Copyright © 2025",
     "fileDescription": "A modern, standalone RSS reader",
-    "comments": "Built with Wails"
+    "comments": "Built with Wails",
+    "bundleIdentifier": "com.mrrss.app",
+    "category": "public.app-category.news"
   },
   "frontend:install": "npm install",
   "frontend:build": "npm run build",
   "wailsjsdir": "./frontend/src/wailsjs",
-  "outputfilename": "MrRSS.exe"
+  "outputfilename": "MrRSS"
 }

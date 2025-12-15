@@ -17,6 +17,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"MrRSS/internal/database"
@@ -314,6 +315,17 @@ func main() {
 			Handler: combinedHandler,
 		},
 		BackgroundColour: &options.RGBA{R: 255, G: 255, B: 255, A: 1},
+		Mac: &mac.Options{
+			TitleBar:             mac.TitleBarHiddenInset(),
+			Appearance:           mac.NSAppearanceNameAqua,
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			About: &mac.AboutInfo{
+				Title:   "MrRSS",
+				Message: "A modern, privacy-focused RSS reader\n\nCopyright © 2025 MrRSS Team",
+				Icon:    trayIconPNG,
+			},
+		},
 		SingleInstanceLock: &options.SingleInstanceLock{
 			UniqueId: "com.mrrss.app",
 			OnSecondInstanceLaunch: func(secondInstanceData options.SecondInstanceData) {

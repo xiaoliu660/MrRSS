@@ -104,7 +104,7 @@ onMounted(() => {
     </div>
 
     <div
-      v-if="settings.auto_cleanup_enabled"
+      v-if="props.settings.auto_cleanup_enabled"
       class="ml-2 sm:ml-4 mt-2 sm:mt-3 space-y-2 sm:space-y-3 border-l-2 border-border pl-2 sm:pl-4"
     >
       <div class="sub-setting-item">

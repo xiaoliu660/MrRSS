@@ -5,6 +5,13 @@ All notable changes to MrRSS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.19] - 2025-12-15
+
+### Fixed
+
+- Fixed the issue where some settings were not saved and applied correctly.
+- Fixed the issue where macOS application failing to launch after installation。
+
 ## [1.2.18] - 2025-12-14
 
 ### Added

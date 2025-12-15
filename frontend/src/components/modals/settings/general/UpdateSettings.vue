@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   PhArchiveTray,
@@ -22,18 +21,6 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   'update:settings': [settings: SettingsData];
 }>();
-
-// Create local reactive copy
-const localSettings = ref<SettingsData>({ ...props.settings });
-
-// Watch for changes and emit updates
-watch(
-  localSettings,
-  (newSettings) => {
-    emit('update:settings', { ...newSettings });
-  },
-  { deep: true }
-);
 
 // Format last update time using shared utility
 function formatLastUpdate(timestamp: string): string {
@@ -69,8 +56,15 @@ function formatLastUpdate(timestamp: string): string {
         </div>
       </div>
       <select
-        v-model="localSettings.refresh_mode"
+        :value="props.settings.refresh_mode"
         class="input-field w-32 sm:w-40 text-xs sm:text-sm"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              refresh_mode: (e.target as HTMLSelectElement).value,
+            })
+        "
       >
         <option value="fixed">{{ t('fixedInterval') }}</option>
         <option value="intelligent">{{ t('intelligentInterval') }}</option>
@@ -79,7 +73,7 @@ function formatLastUpdate(timestamp: string): string {
 
     <!-- Auto Update Interval (shown when fixed mode is selected) -->
     <div
-      v-if="settings.refresh_mode === 'fixed'"
+      v-if="props.settings.refresh_mode === 'fixed'"
       class="mt-2 sm:mt-3 ml-4 sm:ml-6 space-y-2 sm:space-y-3 border-l-2 border-border pl-3 sm:pl-4"
     >
       <div class="sub-setting-item">
@@ -95,10 +89,17 @@ function formatLastUpdate(timestamp: string): string {
           </div>
         </div>
         <input
-          v-model="localSettings.update_interval"
+          :value="props.settings.update_interval"
           type="number"
           min="1"
           class="input-field w-16 sm:w-20 text-center text-xs sm:text-sm"
+          @input="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                update_interval: parseInt((e.target as HTMLInputElement).value) || 30,
+              })
+          "
         />
       </div>
     </div>
@@ -115,7 +116,18 @@ function formatLastUpdate(timestamp: string): string {
           </div>
         </div>
       </div>
-      <input v-model="localSettings.startup_on_boot" type="checkbox" class="toggle" />
+      <input
+        :checked="props.settings.startup_on_boot"
+        type="checkbox"
+        class="toggle"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              startup_on_boot: (e.target as HTMLInputElement).checked,
+            })
+        "
+      />
     </div>
 
     <div class="setting-item mt-2 sm:mt-3">
@@ -130,7 +142,18 @@ function formatLastUpdate(timestamp: string): string {
           </div>
         </div>
       </div>
-      <input v-model="localSettings.close_to_tray" type="checkbox" class="toggle" />
+      <input
+        :checked="props.settings.close_to_tray"
+        type="checkbox"
+        class="toggle"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              close_to_tray: (e.target as HTMLInputElement).checked,
+            })
+        "
+      />
     </div>
   </div>
 </template>

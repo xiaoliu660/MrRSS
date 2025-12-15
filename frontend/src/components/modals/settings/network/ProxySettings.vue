@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhShield, PhGlobe, PhPlug, PhLock, PhUser, PhKey } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
@@ -15,18 +14,6 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   'update:settings': [settings: SettingsData];
 }>();
-
-// Create local reactive copy
-const localSettings = ref<SettingsData>({ ...props.settings });
-
-// Watch for changes and emit updates
-watch(
-  localSettings,
-  (newSettings) => {
-    emit('update:settings', { ...newSettings });
-  },
-  { deep: true }
-);
 </script>
 
 <template>
@@ -52,16 +39,22 @@ watch(
         </div>
       </div>
       <input
-        :checked="localSettings.proxy_enabled"
+        :checked="props.settings.proxy_enabled"
         type="checkbox"
         class="toggle"
-        @change="(e) => (localSettings.proxy_enabled = (e.target as HTMLInputElement).checked)"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              proxy_enabled: (e.target as HTMLInputElement).checked,
+            })
+        "
       />
     </div>
 
     <!-- Proxy Settings (shown when proxy is enabled) -->
     <div
-      v-if="settings.proxy_enabled"
+      v-if="props.settings.proxy_enabled"
       class="mt-2 sm:mt-3 ml-4 sm:ml-6 space-y-2 sm:space-y-3 pl-3 sm:pl-4 border-l-2 border-border"
     >
       <!-- Proxy Type -->
@@ -78,8 +71,15 @@ watch(
           </div>
         </div>
         <select
-          v-model="localSettings.proxy_type"
+          :value="props.settings.proxy_type"
           class="input-field w-28 sm:w-32 text-xs sm:text-sm"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                proxy_type: (e.target as HTMLSelectElement).value,
+              })
+          "
         >
           <option value="http">{{ t('httpProxy') }}</option>
           <option value="https">{{ t('httpsProxy') }}</option>
@@ -101,15 +101,22 @@ watch(
           </div>
         </div>
         <input
-          v-model="localSettings.proxy_host"
+          :value="props.settings.proxy_host"
           type="text"
           :placeholder="t('proxyHostPlaceholder')"
           :class="[
             'input-field w-36 sm:w-48 text-xs sm:text-sm',
-            localSettings.proxy_enabled && !localSettings.proxy_host?.trim()
+            props.settings.proxy_enabled && !props.settings.proxy_host?.trim()
               ? 'border-red-500'
               : '',
           ]"
+          @input="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                proxy_host: (e.target as HTMLInputElement).value,
+              })
+          "
         />
       </div>
 
@@ -127,15 +134,22 @@ watch(
           </div>
         </div>
         <input
-          v-model="localSettings.proxy_port"
+          :value="props.settings.proxy_port"
           type="text"
           :placeholder="t('proxyPortPlaceholder')"
           :class="[
             'input-field w-20 sm:w-24 text-center text-xs sm:text-sm',
-            localSettings.proxy_enabled && !localSettings.proxy_port?.trim()
+            props.settings.proxy_enabled && !props.settings.proxy_port?.trim()
               ? 'border-red-500'
               : '',
           ]"
+          @input="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                proxy_port: (e.target as HTMLInputElement).value,
+              })
+          "
         />
       </div>
 
@@ -153,10 +167,17 @@ watch(
           </div>
         </div>
         <input
-          v-model="localSettings.proxy_username"
+          :value="props.settings.proxy_username"
           type="text"
           :placeholder="t('proxyUsernamePlaceholder')"
           class="input-field w-28 sm:w-36 text-xs sm:text-sm"
+          @input="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                proxy_username: (e.target as HTMLInputElement).value,
+              })
+          "
         />
       </div>
 
@@ -174,10 +195,17 @@ watch(
           </div>
         </div>
         <input
-          v-model="localSettings.proxy_password"
+          :value="props.settings.proxy_password"
           type="password"
           :placeholder="t('proxyPasswordPlaceholder')"
           class="input-field w-28 sm:w-36 text-xs sm:text-sm"
+          @input="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                proxy_password: (e.target as HTMLInputElement).value,
+              })
+          "
         />
       </div>
     </div>

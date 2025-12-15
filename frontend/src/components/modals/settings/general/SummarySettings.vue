@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PhTextAlignLeft, PhTextT, PhPackage, PhKey, PhLink, PhRobot } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
@@ -15,18 +14,6 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   'update:settings': [settings: SettingsData];
 }>();
-
-// Create local reactive copy
-const localSettings = ref<SettingsData>({ ...props.settings });
-
-// Watch for changes and emit updates
-watch(
-  localSettings,
-  (newSettings) => {
-    emit('update:settings', { ...newSettings });
-  },
-  { deep: true }
-);
 </script>
 
 <template>
@@ -49,11 +36,22 @@ watch(
           </div>
         </div>
       </div>
-      <input v-model="localSettings.summary_enabled" type="checkbox" class="toggle" />
+      <input
+        :checked="props.settings.summary_enabled"
+        type="checkbox"
+        class="toggle"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...props.settings,
+              summary_enabled: (e.target as HTMLInputElement).checked,
+            })
+        "
+      />
     </div>
 
     <div
-      v-if="settings.summary_enabled"
+      v-if="props.settings.summary_enabled"
       class="ml-2 sm:ml-4 space-y-2 sm:space-y-3 border-l-2 border-border pl-2 sm:pl-4"
     >
       <div class="sub-setting-item">
@@ -67,8 +65,15 @@ watch(
           </div>
         </div>
         <select
-          v-model="localSettings.summary_provider"
+          :value="props.settings.summary_provider"
           class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                summary_provider: (e.target as HTMLSelectElement).value,
+              })
+          "
         >
           <option value="local">{{ t('localAlgorithm') }}</option>
           <option value="ai">{{ t('aiSummary') }}</option>
@@ -76,7 +81,7 @@ watch(
       </div>
 
       <!-- AI Summary Settings -->
-      <template v-if="settings.summary_provider === 'ai'">
+      <template v-if="props.settings.summary_provider === 'ai'">
         <div class="sub-setting-item">
           <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
             <PhKey :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
@@ -90,17 +95,24 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.summary_ai_api_key"
+            :value="props.settings.summary_ai_api_key"
             type="password"
             :placeholder="t('summaryAiApiKeyPlaceholder')"
             :class="[
               'input-field w-32 sm:w-48 text-xs sm:text-sm',
-              settings.summary_enabled &&
-              settings.summary_provider === 'ai' &&
-              !settings.summary_ai_api_key?.trim()
+              props.settings.summary_enabled &&
+              props.settings.summary_provider === 'ai' &&
+              !props.settings.summary_ai_api_key?.trim()
                 ? 'border-red-500'
                 : '',
             ]"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  summary_ai_api_key: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item">
@@ -114,10 +126,17 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.summary_ai_endpoint"
+            :value="props.settings.summary_ai_endpoint"
             type="text"
             :placeholder="t('summaryAiEndpointPlaceholder')"
             class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  summary_ai_endpoint: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item">
@@ -131,10 +150,17 @@ watch(
             </div>
           </div>
           <input
-            v-model="localSettings.summary_ai_model"
+            :value="props.settings.summary_ai_model"
             type="text"
             :placeholder="t('summaryAiModelPlaceholder')"
             class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  summary_ai_model: (e.target as HTMLInputElement).value,
+                })
+            "
           />
         </div>
         <div class="sub-setting-item flex-col items-stretch gap-2">
@@ -148,9 +174,16 @@ watch(
             </div>
           </div>
           <textarea
-            v-model="localSettings.summary_ai_system_prompt"
+            :value="props.settings.summary_ai_system_prompt"
             class="input-field w-full text-xs sm:text-sm resize-none"
             rows="3"
+            @input="
+              (e) =>
+                emit('update:settings', {
+                  ...props.settings,
+                  summary_ai_system_prompt: (e.target as HTMLTextAreaElement).value,
+                })
+            "
           />
         </div>
       </template>
@@ -166,8 +199,15 @@ watch(
           </div>
         </div>
         <select
-          v-model="localSettings.summary_length"
-          class="input-field w-24 sm:w-48 text-xs sm:text-sm"
+          :value="props.settings.summary_length"
+          class="input-field w-32 sm:w-48 text-xs sm:text-sm"
+          @change="
+            (e) =>
+              emit('update:settings', {
+                ...props.settings,
+                summary_length: (e.target as HTMLSelectElement).value,
+              })
+          "
         >
           <option value="short">{{ t('summaryLengthShort') }}</option>
           <option value="medium">{{ t('summaryLengthMedium') }}</option>
