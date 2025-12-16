@@ -4,21 +4,21 @@
 # Application Information:
 # Name: MrRSS
 # Description: A Modern, Cross-Platform Desktop RSS Reader
-# Publisher: MrRSS Team
+# Publisher: Ch3nyang
 # URL: https://github.com/WCY-dt/MrRSS
-# Copyright: Copyright © MrRSS Team
+# Copyright: Copyright © Ch3nyang
 
 # Exit on error, but allow some commands to fail gracefully
 set -e
 
 APP_NAME="MrRSS"
 # Get version from wails.json if available, otherwise use default
-VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' wails.json 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "1.1.0")
+VERSION=$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' wails.json 2>/dev/null | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "1.2.20")
 # Get architecture from environment variable or default to amd64
 ARCH=${ARCH:-amd64}
 echo "Target architecture: ${ARCH}"
 echo "System architecture: $(uname -m)"
-APP_PUBLISHER="MrRSS Team"
+APP_PUBLISHER="Ch3nyang"
 APP_URL="https://github.com/WCY-dt/MrRSS"
 APP_DESCRIPTION="A Modern, Cross-Platform Desktop RSS Reader"
 BUILD_DIR="build/bin"

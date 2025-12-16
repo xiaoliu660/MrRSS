@@ -11,12 +11,12 @@ updates:
       - "dependencies"
       - "go"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore(go-deps)"
       include: "scope"
 
   # NPM dependencies
   - package-ecosystem: "npm"
-    directory: "/frontend"
+    directory: ["/frontend", "/backend"]
     schedule:
       interval: "weekly"
       day: "monday"
@@ -25,12 +25,8 @@ updates:
       - "dependencies"
       - "npm"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore(npm-deps)"
       include: "scope"
-    ignore:
-      # Ignore major version updates for now
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -42,4 +38,4 @@ updates:
       - "dependencies"
       - "github-actions"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore(actions-deps)"
