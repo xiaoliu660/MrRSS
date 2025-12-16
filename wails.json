@@ -2,13 +2,13 @@
   "name": "MrRSS",
   "version": "1.2.20",
   "author": {
-    "name": "MrRSS Developer",
-    "email": "dev@mrrss.app"
+    "name": "Ch3nyang",
+    "email": "mail@ch3nyang.top"
   },
   "info": {
     "productName": "MrRSS",
     "productVersion": "1.2.20",
-    "companyName": "MrRSS Team",
+    "companyName": "Ch3nyang",
     "copyright": "Copyright © 2025",
     "fileDescription": "A modern, standalone RSS reader",
     "comments": "Built with Wails",

@@ -14,6 +14,9 @@
   </p>
 </div>
 
+> [!WARNING]
+> The latest version of the software has a certain probability of crashing on MacOS 26. It is recommended to use a lower version of the software. We are investigating and fixing this issue.
+
 ---
 
 ## ✨ Features

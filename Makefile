@@ -1,5 +1,5 @@
 # Makefile for MrRSS (Cross-platform)
-.PHONY: help build build-frontend build-backend test test-frontend test-backend lint lint-frontend format format-frontend clean dev setup install-deps update-deps check pre-commit release-check
+.PHONY: help build build-frontend build-backend test test-frontend test-backend lint lint-frontend format format-frontend clean dev setup install-deps update-deps check pre-commit release-check love
 
 # Detect OS
 ifeq ($(OS),Windows_NT)
@@ -129,6 +129,9 @@ ifeq ($(DETECTED_OS),Windows)
 else
 	./scripts/pre-release.sh
 endif
+
+love: ## Show some love
+	@echo "❤️ MrRSS loves you too! ❤️"
 
 # Docker (if needed in future)
 # docker-build:
