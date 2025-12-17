@@ -9,7 +9,8 @@
 ; All paths in this script are relative to the script directory.
 
 !define APP_NAME "MrRSS"
-!define APP_VERSION "1.2.20"
+!define APP_VERSION "1.3.1"
+!define APP_VERSION_NUMERIC "1.3.1"  ; NSIS requires X.X.X.X format
 !define APP_PUBLISHER "Ch3nyang"
 !define APP_URL "https://github.com/WCY-dt/MrRSS"
 !define APP_DESCRIPTION "A Modern, Cross-Platform Desktop RSS Reader"
@@ -28,12 +29,9 @@ RequestExecutionLevel admin
 
 ; MUI Settings
 !define MUI_ABORTWARNING
-; Note: Using default NSIS icons for compatibility
-; To use custom icons, ensure icon.ico is in build/windows/ and uncomment:
-; !define MUI_ICON "build\windows\icon.ico"
-; !define MUI_UNICON "build\windows\icon.ico"
-!define MUI_ICON "${NSISDIR}\Contrib\Graphics\Icons\modern-install.ico"
-!define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
+; Use custom icons from build/windows/
+!define MUI_ICON "icon.ico"
+!define MUI_UNICON "icon.ico"
 
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
@@ -60,7 +58,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_LANGUAGE "English"
 
 ; Version Information
-VIProductVersion "${APP_VERSION}.0"
+VIProductVersion "${APP_VERSION_NUMERIC}"
 VIAddVersionKey "ProductName" "${APP_NAME}"
 VIAddVersionKey "FileDescription" "${APP_DESCRIPTION}"
 VIAddVersionKey "FileVersion" "${APP_VERSION}"
