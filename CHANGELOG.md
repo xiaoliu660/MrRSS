@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed the issue where docker image failed to access local files due to permission issues. (#296)
+- Fixed the issue where articles failed to open in default browser. (#294)
 
 ## [1.3.7] - 2025-12-23
 
