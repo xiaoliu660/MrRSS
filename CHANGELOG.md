@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved I18n translations, icons, and descriptions in settings page for better clarity and user experience.
 - Improved UX of feed adding/editing modal. (#317)
+- Expand status of categories in sidebar is now persisted across application restarts. (#315)
 
 ### Fixed
 

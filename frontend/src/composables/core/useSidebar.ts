@@ -20,7 +20,11 @@ export function useSidebar() {
   const store = useAppStore();
   const { t } = useI18n();
 
-  const openCategories: Ref<Set<string>> = ref(new Set());
+  // Load saved category state from localStorage
+  const savedCategories = localStorage.getItem('openCategories');
+  const openCategories: Ref<Set<string>> = ref(
+    savedCategories ? new Set(JSON.parse(savedCategories)) : new Set()
+  );
   const searchQuery: Ref<string> = ref('');
 
   // Build category tree with search filtering
@@ -88,13 +92,15 @@ export function useSidebar() {
     return counts;
   });
 
-  // Auto-expand all categories by default
+  // Auto-expand new categories only if no saved state exists
   watch(
     () => tree.value.categories,
     (newCategories) => {
       if (newCategories) {
+        const hasSavedState = localStorage.getItem('openCategories') !== null;
         newCategories.forEach((cat) => {
-          if (!openCategories.value.has(cat)) {
+          // Only auto-expand if this is a new category and no saved state exists
+          if (!openCategories.value.has(cat) && !hasSavedState) {
             openCategories.value.add(cat);
           }
         });
@@ -109,6 +115,8 @@ export function useSidebar() {
     } else {
       openCategories.value.add(path);
     }
+    // Save to localStorage
+    localStorage.setItem('openCategories', JSON.stringify([...openCategories.value]));
   }
 
   function isCategoryOpen(path: string): boolean {
