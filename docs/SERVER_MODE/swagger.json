@@ -2902,7 +2902,7 @@
         },
         "/media/proxy-webpage": {
             "get": {
-                "description": "Proxy webpage HTML content to bypass CSP restrictions in iframes",
+                "description": "Proxy webpage HTML content and rewrite resource URLs to bypass CORS restrictions",
                 "consumes": [
                     "application/json"
                 ],
@@ -3763,6 +3763,63 @@
                 "responses": {
                     "200": {
                         "description": "Application version (version)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webpage/resource": {
+            "get": {
+                "description": "Proxy individual resources (CSS, JS, images, fonts, etc.) from a webpage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Proxy webpage resource",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Resource URL to proxy",
+                        "name": "url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Referer URL for the webpage",
+                        "name": "referer",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Resource file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request (missing or invalid URL)",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
