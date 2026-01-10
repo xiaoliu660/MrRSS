@@ -294,9 +294,9 @@ func generateSettingsHandlersGo(schema *SettingsSchema) error {
 		def := schema.Settings[key]
 		varName := toGoVarName(key)
 		if def.Encrypted {
-			getVars = append(getVars, fmt.Sprintf("\t\t%s, _ := h.DB.GetEncryptedSetting(\"%s\")", varName, key))
+			getVars = append(getVars, fmt.Sprintf("\t\t%s := safeGetEncryptedSetting(h, \"%s\")", varName, key))
 		} else {
-			getVars = append(getVars, fmt.Sprintf("\t\t%s, _ := h.DB.GetSetting(\"%s\")", varName, key))
+			getVars = append(getVars, fmt.Sprintf("\t\t%s := safeGetSetting(h, \"%s\")", varName, key))
 		}
 		jsonFields = append(jsonFields, fmt.Sprintf("\t\t\t\"%s\": %s,", key, varName))
 	}
@@ -334,9 +334,42 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"MrRSS/internal/handlers/core"
 )
+
+// safeGetEncryptedSetting safely retrieves an encrypted setting, returning empty string on error.
+// This prevents JSON encoding errors when encrypted data is corrupted or cannot be decrypted.
+func safeGetEncryptedSetting(h *core.Handler, key string) string {
+	value, err := h.DB.GetEncryptedSetting(key)
+	if err != nil {
+		log.Printf("Warning: Failed to decrypt setting %%s: %%v. Returning empty string.", key, err)
+		return ""
+	}
+	return sanitizeValue(value)
+}
+
+// safeGetSetting safely retrieves a setting, returning empty string on error.
+func safeGetSetting(h *core.Handler, key string) string {
+	value, err := h.DB.GetSetting(key)
+	if err != nil {
+		log.Printf("Warning: Failed to retrieve setting %%s: %%v. Returning empty string.", key, err)
+		return ""
+	}
+	return sanitizeValue(value)
+}
+
+// sanitizeValue removes control characters that could break JSON encoding.
+func sanitizeValue(value string) string {
+	// Remove control characters that could break JSON
+	return strings.Map(func(r rune) rune {
+		if r < 32 && r != '\t' && r != '\n' && r != '\r' {
+			return -1 // Remove control characters except tab, newline, carriage return
+		}
+		return r
+	}, value)
+}
 
 // HandleSettings handles GET and POST requests for application settings.
 // CODE GENERATED - DO NOT EDIT MANUALLY

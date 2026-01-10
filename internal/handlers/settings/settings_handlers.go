@@ -4,100 +4,126 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strings"
 
 	"MrRSS/internal/handlers/core"
 )
 
+// safeGetEncryptedSetting safely retrieves an encrypted setting, returning empty string on error.
+// This prevents JSON encoding errors when encrypted data is corrupted or cannot be decrypted.
+func safeGetEncryptedSetting(h *core.Handler, key string) string {
+	value, err := h.DB.GetEncryptedSetting(key)
+	if err != nil {
+		log.Printf("Warning: Failed to decrypt setting %s: %v. Returning empty string.", key, err)
+		return ""
+	}
+	return sanitizeValue(value)
+}
+
+// safeGetSetting safely retrieves a setting, returning empty string on error.
+func safeGetSetting(h *core.Handler, key string) string {
+	value, err := h.DB.GetSetting(key)
+	if err != nil {
+		log.Printf("Warning: Failed to retrieve setting %s: %v. Returning empty string.", key, err)
+		return ""
+	}
+	return sanitizeValue(value)
+}
+
+// sanitizeValue removes control characters that could break JSON encoding.
+func sanitizeValue(value string) string {
+	// Remove control characters that could break JSON
+	return strings.Map(func(r rune) rune {
+		if r < 32 && r != '\t' && r != '\n' && r != '\r' {
+			return -1 // Remove control characters except tab, newline, carriage return
+		}
+		return r
+	}, value)
+}
+
 // HandleSettings handles GET and POST requests for application settings.
-// @Summary      Get application settings
-// @Description  Get all application settings (sensitive values like passwords are cleared)
-// @Tags         settings
-// @Accept       json
-// @Produce      json
-// @Success      200  {object}  map[string]string  "Application settings (key-value pairs)"
-// @Router       /settings [get]
 // CODE GENERATED - DO NOT EDIT MANUALLY
 // To add new settings, edit internal/config/settings_schema.json and run: go run tools/settings-generator/main.go
 func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		aiApiKey, _ := h.DB.GetEncryptedSetting("ai_api_key")
-		aiChatEnabled, _ := h.DB.GetSetting("ai_chat_enabled")
-		aiCustomHeaders, _ := h.DB.GetSetting("ai_custom_headers")
-		aiEndpoint, _ := h.DB.GetSetting("ai_endpoint")
-		aiModel, _ := h.DB.GetSetting("ai_model")
-		aiSummaryPrompt, _ := h.DB.GetSetting("ai_summary_prompt")
-		aiTranslationPrompt, _ := h.DB.GetSetting("ai_translation_prompt")
-		aiUsageLimit, _ := h.DB.GetSetting("ai_usage_limit")
-		aiUsageTokens, _ := h.DB.GetSetting("ai_usage_tokens")
-		autoCleanupEnabled, _ := h.DB.GetSetting("auto_cleanup_enabled")
-		autoShowAllContent, _ := h.DB.GetSetting("auto_show_all_content")
-		autoUpdate, _ := h.DB.GetSetting("auto_update")
-		baiduAppId, _ := h.DB.GetSetting("baidu_app_id")
-		baiduSecretKey, _ := h.DB.GetEncryptedSetting("baidu_secret_key")
-		closeToTray, _ := h.DB.GetSetting("close_to_tray")
-		customCssFile, _ := h.DB.GetSetting("custom_css_file")
-		deeplApiKey, _ := h.DB.GetEncryptedSetting("deepl_api_key")
-		deeplEndpoint, _ := h.DB.GetSetting("deepl_endpoint")
-		defaultViewMode, _ := h.DB.GetSetting("default_view_mode")
-		freshrssApiPassword, _ := h.DB.GetEncryptedSetting("freshrss_api_password")
-		freshrssAutoSyncInterval, _ := h.DB.GetSetting("freshrss_auto_sync_interval")
-		freshrssEnabled, _ := h.DB.GetSetting("freshrss_enabled")
-		freshrssLastSyncTime, _ := h.DB.GetSetting("freshrss_last_sync_time")
-		freshrssServerUrl, _ := h.DB.GetSetting("freshrss_server_url")
-		freshrssSyncOnStartup, _ := h.DB.GetSetting("freshrss_sync_on_startup")
-		freshrssUsername, _ := h.DB.GetSetting("freshrss_username")
-		fullTextFetchEnabled, _ := h.DB.GetSetting("full_text_fetch_enabled")
-		googleTranslateEndpoint, _ := h.DB.GetSetting("google_translate_endpoint")
-		hoverMarkAsRead, _ := h.DB.GetSetting("hover_mark_as_read")
-		imageGalleryEnabled, _ := h.DB.GetSetting("image_gallery_enabled")
-		language, _ := h.DB.GetSetting("language")
-		lastGlobalRefresh, _ := h.DB.GetSetting("last_global_refresh")
-		lastNetworkTest, _ := h.DB.GetSetting("last_network_test")
-		maxArticleAgeDays, _ := h.DB.GetSetting("max_article_age_days")
-		maxCacheSizeMb, _ := h.DB.GetSetting("max_cache_size_mb")
-		maxConcurrentRefreshes, _ := h.DB.GetSetting("max_concurrent_refreshes")
-		mediaCacheEnabled, _ := h.DB.GetSetting("media_cache_enabled")
-		mediaCacheMaxAgeDays, _ := h.DB.GetSetting("media_cache_max_age_days")
-		mediaCacheMaxSizeMb, _ := h.DB.GetSetting("media_cache_max_size_mb")
-		mediaProxyFallback, _ := h.DB.GetSetting("media_proxy_fallback")
-		networkBandwidthMbps, _ := h.DB.GetSetting("network_bandwidth_mbps")
-		networkLatencyMs, _ := h.DB.GetSetting("network_latency_ms")
-		networkSpeed, _ := h.DB.GetSetting("network_speed")
-		obsidianEnabled, _ := h.DB.GetSetting("obsidian_enabled")
-		obsidianVault, _ := h.DB.GetSetting("obsidian_vault")
-		obsidianVaultPath, _ := h.DB.GetSetting("obsidian_vault_path")
-		proxyEnabled, _ := h.DB.GetSetting("proxy_enabled")
-		proxyHost, _ := h.DB.GetSetting("proxy_host")
-		proxyPassword, _ := h.DB.GetEncryptedSetting("proxy_password")
-		proxyPort, _ := h.DB.GetSetting("proxy_port")
-		proxyType, _ := h.DB.GetSetting("proxy_type")
-		proxyUsername, _ := h.DB.GetEncryptedSetting("proxy_username")
-		refreshMode, _ := h.DB.GetSetting("refresh_mode")
-		retryTimeoutSeconds, _ := h.DB.GetSetting("retry_timeout_seconds")
-		rsshubApiKey, _ := h.DB.GetEncryptedSetting("rsshub_api_key")
-		rsshubEnabled, _ := h.DB.GetSetting("rsshub_enabled")
-		rsshubEndpoint, _ := h.DB.GetSetting("rsshub_endpoint")
-		rules, _ := h.DB.GetSetting("rules")
-		shortcuts, _ := h.DB.GetSetting("shortcuts")
-		shortcutsEnabled, _ := h.DB.GetSetting("shortcuts_enabled")
-		showArticlePreviewImages, _ := h.DB.GetSetting("show_article_preview_images")
-		showHiddenArticles, _ := h.DB.GetSetting("show_hidden_articles")
-		startupOnBoot, _ := h.DB.GetSetting("startup_on_boot")
-		summaryEnabled, _ := h.DB.GetSetting("summary_enabled")
-		summaryLength, _ := h.DB.GetSetting("summary_length")
-		summaryProvider, _ := h.DB.GetSetting("summary_provider")
-		summaryTriggerMode, _ := h.DB.GetSetting("summary_trigger_mode")
-		targetLanguage, _ := h.DB.GetSetting("target_language")
-		theme, _ := h.DB.GetSetting("theme")
-		translationEnabled, _ := h.DB.GetSetting("translation_enabled")
-		translationProvider, _ := h.DB.GetSetting("translation_provider")
-		updateInterval, _ := h.DB.GetSetting("update_interval")
-		windowHeight, _ := h.DB.GetSetting("window_height")
-		windowMaximized, _ := h.DB.GetSetting("window_maximized")
-		windowWidth, _ := h.DB.GetSetting("window_width")
-		windowX, _ := h.DB.GetSetting("window_x")
-		windowY, _ := h.DB.GetSetting("window_y")
+		aiApiKey := safeGetEncryptedSetting(h, "ai_api_key")
+		aiChatEnabled := safeGetSetting(h, "ai_chat_enabled")
+		aiCustomHeaders := safeGetSetting(h, "ai_custom_headers")
+		aiEndpoint := safeGetSetting(h, "ai_endpoint")
+		aiModel := safeGetSetting(h, "ai_model")
+		aiSummaryPrompt := safeGetSetting(h, "ai_summary_prompt")
+		aiTranslationPrompt := safeGetSetting(h, "ai_translation_prompt")
+		aiUsageLimit := safeGetSetting(h, "ai_usage_limit")
+		aiUsageTokens := safeGetSetting(h, "ai_usage_tokens")
+		autoCleanupEnabled := safeGetSetting(h, "auto_cleanup_enabled")
+		autoShowAllContent := safeGetSetting(h, "auto_show_all_content")
+		autoUpdate := safeGetSetting(h, "auto_update")
+		baiduAppId := safeGetSetting(h, "baidu_app_id")
+		baiduSecretKey := safeGetEncryptedSetting(h, "baidu_secret_key")
+		closeToTray := safeGetSetting(h, "close_to_tray")
+		customCssFile := safeGetSetting(h, "custom_css_file")
+		deeplApiKey := safeGetEncryptedSetting(h, "deepl_api_key")
+		deeplEndpoint := safeGetSetting(h, "deepl_endpoint")
+		defaultViewMode := safeGetSetting(h, "default_view_mode")
+		freshrssApiPassword := safeGetEncryptedSetting(h, "freshrss_api_password")
+		freshrssAutoSyncInterval := safeGetSetting(h, "freshrss_auto_sync_interval")
+		freshrssEnabled := safeGetSetting(h, "freshrss_enabled")
+		freshrssLastSyncTime := safeGetSetting(h, "freshrss_last_sync_time")
+		freshrssServerUrl := safeGetSetting(h, "freshrss_server_url")
+		freshrssSyncOnStartup := safeGetSetting(h, "freshrss_sync_on_startup")
+		freshrssUsername := safeGetSetting(h, "freshrss_username")
+		fullTextFetchEnabled := safeGetSetting(h, "full_text_fetch_enabled")
+		googleTranslateEndpoint := safeGetSetting(h, "google_translate_endpoint")
+		hoverMarkAsRead := safeGetSetting(h, "hover_mark_as_read")
+		imageGalleryEnabled := safeGetSetting(h, "image_gallery_enabled")
+		language := safeGetSetting(h, "language")
+		lastGlobalRefresh := safeGetSetting(h, "last_global_refresh")
+		lastNetworkTest := safeGetSetting(h, "last_network_test")
+		maxArticleAgeDays := safeGetSetting(h, "max_article_age_days")
+		maxCacheSizeMb := safeGetSetting(h, "max_cache_size_mb")
+		maxConcurrentRefreshes := safeGetSetting(h, "max_concurrent_refreshes")
+		mediaCacheEnabled := safeGetSetting(h, "media_cache_enabled")
+		mediaCacheMaxAgeDays := safeGetSetting(h, "media_cache_max_age_days")
+		mediaCacheMaxSizeMb := safeGetSetting(h, "media_cache_max_size_mb")
+		mediaProxyFallback := safeGetSetting(h, "media_proxy_fallback")
+		networkBandwidthMbps := safeGetSetting(h, "network_bandwidth_mbps")
+		networkLatencyMs := safeGetSetting(h, "network_latency_ms")
+		networkSpeed := safeGetSetting(h, "network_speed")
+		obsidianEnabled := safeGetSetting(h, "obsidian_enabled")
+		obsidianVault := safeGetSetting(h, "obsidian_vault")
+		obsidianVaultPath := safeGetSetting(h, "obsidian_vault_path")
+		proxyEnabled := safeGetSetting(h, "proxy_enabled")
+		proxyHost := safeGetSetting(h, "proxy_host")
+		proxyPassword := safeGetEncryptedSetting(h, "proxy_password")
+		proxyPort := safeGetSetting(h, "proxy_port")
+		proxyType := safeGetSetting(h, "proxy_type")
+		proxyUsername := safeGetEncryptedSetting(h, "proxy_username")
+		refreshMode := safeGetSetting(h, "refresh_mode")
+		retryTimeoutSeconds := safeGetSetting(h, "retry_timeout_seconds")
+		rsshubApiKey := safeGetEncryptedSetting(h, "rsshub_api_key")
+		rsshubEnabled := safeGetSetting(h, "rsshub_enabled")
+		rsshubEndpoint := safeGetSetting(h, "rsshub_endpoint")
+		rules := safeGetSetting(h, "rules")
+		shortcuts := safeGetSetting(h, "shortcuts")
+		shortcutsEnabled := safeGetSetting(h, "shortcuts_enabled")
+		showArticlePreviewImages := safeGetSetting(h, "show_article_preview_images")
+		showHiddenArticles := safeGetSetting(h, "show_hidden_articles")
+		startupOnBoot := safeGetSetting(h, "startup_on_boot")
+		summaryEnabled := safeGetSetting(h, "summary_enabled")
+		summaryLength := safeGetSetting(h, "summary_length")
+		summaryProvider := safeGetSetting(h, "summary_provider")
+		summaryTriggerMode := safeGetSetting(h, "summary_trigger_mode")
+		targetLanguage := safeGetSetting(h, "target_language")
+		theme := safeGetSetting(h, "theme")
+		translationEnabled := safeGetSetting(h, "translation_enabled")
+		translationProvider := safeGetSetting(h, "translation_provider")
+		updateInterval := safeGetSetting(h, "update_interval")
+		windowHeight := safeGetSetting(h, "window_height")
+		windowMaximized := safeGetSetting(h, "window_maximized")
+		windowWidth := safeGetSetting(h, "window_width")
+		windowX := safeGetSetting(h, "window_x")
+		windowY := safeGetSetting(h, "window_y")
 		json.NewEncoder(w).Encode(map[string]string{
 			"ai_api_key":                  aiApiKey,
 			"ai_chat_enabled":             aiChatEnabled,
@@ -261,12 +287,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		if req.AIAPIKey != "" {
-			if err := h.DB.SetEncryptedSetting("ai_api_key", req.AIAPIKey); err != nil {
-				log.Printf("Failed to save ai_api_key: %v", err)
-				http.Error(w, "Failed to save ai_api_key", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("ai_api_key", req.AIAPIKey); err != nil {
+			log.Printf("Failed to save ai_api_key: %v", err)
+			http.Error(w, "Failed to save ai_api_key", http.StatusInternalServerError)
+			return
 		}
 
 		if req.AIChatEnabled != "" {
@@ -317,12 +341,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			h.DB.SetSetting("baidu_app_id", req.BaiduAppId)
 		}
 
-		if req.BaiduSecretKey != "" {
-			if err := h.DB.SetEncryptedSetting("baidu_secret_key", req.BaiduSecretKey); err != nil {
-				log.Printf("Failed to save baidu_secret_key: %v", err)
-				http.Error(w, "Failed to save baidu_secret_key", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("baidu_secret_key", req.BaiduSecretKey); err != nil {
+			log.Printf("Failed to save baidu_secret_key: %v", err)
+			http.Error(w, "Failed to save baidu_secret_key", http.StatusInternalServerError)
+			return
 		}
 
 		if req.CloseToTray != "" {
@@ -333,12 +355,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			h.DB.SetSetting("custom_css_file", req.CustomCssFile)
 		}
 
-		if req.DeeplAPIKey != "" {
-			if err := h.DB.SetEncryptedSetting("deepl_api_key", req.DeeplAPIKey); err != nil {
-				log.Printf("Failed to save deepl_api_key: %v", err)
-				http.Error(w, "Failed to save deepl_api_key", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("deepl_api_key", req.DeeplAPIKey); err != nil {
+			log.Printf("Failed to save deepl_api_key: %v", err)
+			http.Error(w, "Failed to save deepl_api_key", http.StatusInternalServerError)
+			return
 		}
 
 		if req.DeeplEndpoint != "" {
@@ -349,12 +369,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			h.DB.SetSetting("default_view_mode", req.DefaultViewMode)
 		}
 
-		if req.FreshRSSAPIPassword != "" {
-			if err := h.DB.SetEncryptedSetting("freshrss_api_password", req.FreshRSSAPIPassword); err != nil {
-				log.Printf("Failed to save freshrss_api_password: %v", err)
-				http.Error(w, "Failed to save freshrss_api_password", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("freshrss_api_password", req.FreshRSSAPIPassword); err != nil {
+			log.Printf("Failed to save freshrss_api_password: %v", err)
+			http.Error(w, "Failed to save freshrss_api_password", http.StatusInternalServerError)
+			return
 		}
 
 		if req.FreshRSSAutoSyncInterval != "" {
@@ -362,24 +380,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		}
 
 		if req.FreshRSSEnabled != "" {
-			// Check if FreshRSS is being disabled
-			oldEnabled, _ := h.DB.GetSetting("freshrss_enabled")
-			wasEnabled := oldEnabled == "true"
-			isEnabled := req.FreshRSSEnabled == "true"
-
-			// Save the new setting first
 			h.DB.SetSetting("freshrss_enabled", req.FreshRSSEnabled)
-
-			// If FreshRSS was enabled and is now being disabled, cleanup all FreshRSS data
-			if wasEnabled && !isEnabled {
-				log.Printf("[Settings] FreshRSS is being disabled, cleaning up all FreshRSS feeds and articles...")
-				if err := h.DB.CleanupFreshRSSData(); err != nil {
-					log.Printf("[Settings] Error cleaning up FreshRSS data: %v", err)
-					// Continue anyway - setting has been saved
-				} else {
-					log.Printf("[Settings] Successfully cleaned up FreshRSS data")
-				}
-			}
 		}
 
 		if req.FreshRSSLastSyncTime != "" {
@@ -486,12 +487,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			h.DB.SetSetting("proxy_host", req.ProxyHost)
 		}
 
-		if req.ProxyPassword != "" {
-			if err := h.DB.SetEncryptedSetting("proxy_password", req.ProxyPassword); err != nil {
-				log.Printf("Failed to save proxy_password: %v", err)
-				http.Error(w, "Failed to save proxy_password", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("proxy_password", req.ProxyPassword); err != nil {
+			log.Printf("Failed to save proxy_password: %v", err)
+			http.Error(w, "Failed to save proxy_password", http.StatusInternalServerError)
+			return
 		}
 
 		if req.ProxyPort != "" {
@@ -502,12 +501,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			h.DB.SetSetting("proxy_type", req.ProxyType)
 		}
 
-		if req.ProxyUsername != "" {
-			if err := h.DB.SetEncryptedSetting("proxy_username", req.ProxyUsername); err != nil {
-				log.Printf("Failed to save proxy_username: %v", err)
-				http.Error(w, "Failed to save proxy_username", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("proxy_username", req.ProxyUsername); err != nil {
+			log.Printf("Failed to save proxy_username: %v", err)
+			http.Error(w, "Failed to save proxy_username", http.StatusInternalServerError)
+			return
 		}
 
 		if req.RefreshMode != "" {
@@ -518,12 +515,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			h.DB.SetSetting("retry_timeout_seconds", req.RetryTimeoutSeconds)
 		}
 
-		if req.RsshubAPIKey != "" {
-			if err := h.DB.SetEncryptedSetting("rsshub_api_key", req.RsshubAPIKey); err != nil {
-				log.Printf("Failed to save rsshub_api_key: %v", err)
-				http.Error(w, "Failed to save rsshub_api_key", http.StatusInternalServerError)
-				return
-			}
+		if err := h.DB.SetEncryptedSetting("rsshub_api_key", req.RsshubAPIKey); err != nil {
+			log.Printf("Failed to save rsshub_api_key: %v", err)
+			http.Error(w, "Failed to save rsshub_api_key", http.StatusInternalServerError)
+			return
 		}
 
 		if req.RsshubEnabled != "" {

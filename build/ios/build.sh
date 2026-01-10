@@ -4,8 +4,8 @@ set -e
 # Build configuration
 APP_NAME="MrRSS"
 BUNDLE_ID="com.mrrss.app"
-VERSION="1.3.14"
-BUILD_NUMBER="1.3.14"
+VERSION="1.3.15"
+BUILD_NUMBER="1.3.15"
 BUILD_DIR="build/ios"
 TARGET="simulator"
 

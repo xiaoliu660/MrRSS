@@ -17,16 +17,30 @@ app.use(PhosphorIcons);
 async function initializeApp() {
   try {
     const res = await fetch('/api/settings');
-    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    // Get response text first to debug JSON parsing issues
+    const text = await res.text();
+    let data;
+
+    try {
+      data = JSON.parse(text);
+    } catch (jsonError) {
+      console.error('JSON parse error:', jsonError);
+      console.error('Response text (first 500 chars):', text.substring(0, 500));
+      // Use default empty object if JSON is invalid
+      data = {};
+    }
+
     if (data.language) {
       locale.value = data.language;
     }
 
     // Start FreshRSS status polling if enabled
-    if (data.freshrss_enabled === 'true') {
-      const appStore = useAppStore();
-      await appStore.startFreshRSSStatusPolling();
-    }
+    // Note: Don't use store here - it will be initialized after mount
+    // Store initialization will handle FreshRSS polling in App.vue
   } catch (e) {
     console.error('Error loading language setting:', e);
   }
