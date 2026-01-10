@@ -64,7 +64,7 @@ export function useArticleDetail() {
   function markAsReadIfNeeded(article: Article) {
     if (!article.is_read) {
       article.is_read = true;
-      fetch(`/api/articles/mark-read-sync?id=${article.id}&read=true`, {
+      fetch(`/api/articles/read?id=${article.id}&read=true`, {
         method: 'POST',
       });
     }
@@ -122,12 +122,11 @@ export function useArticleDetail() {
         // Check if there's a pending render action from context menu
         if (pendingRenderAction.value) {
           // Apply the explicit action instead of default
+          // Don't set userPreferredMode for context menu actions - they're one-time actions
           if (pendingRenderAction.value === 'showContent') {
             showContent.value = true;
-            userPreferredMode.value = 'rendered';
           } else if (pendingRenderAction.value === 'showOriginal') {
             showContent.value = false;
-            userPreferredMode.value = 'original';
           }
           pendingRenderAction.value = null; // Clear the pending action
         } else {
@@ -168,7 +167,7 @@ export function useArticleDetail() {
     if (!article.value) return;
     const newState = !article.value.is_read;
     article.value.is_read = newState;
-    fetch(`/api/articles/mark-read-sync?id=${article.value.id}&read=${newState}`, {
+    fetch(`/api/articles/read?id=${article.value.id}&read=${newState}`, {
       method: 'POST',
     });
   }
@@ -177,7 +176,7 @@ export function useArticleDetail() {
     if (!article.value) return;
     const newState = !article.value.is_favorite;
     article.value.is_favorite = newState;
-    fetch(`/api/articles/toggle-favorite-sync?id=${article.value.id}`, { method: 'POST' });
+    fetch(`/api/articles/favorite?id=${article.value.id}`, { method: 'POST' });
   }
 
   async function toggleReadLater() {
@@ -589,7 +588,7 @@ export function useArticleDetail() {
     // Mark as read when rendering content
     if (!article.value.is_read) {
       article.value.is_read = true;
-      fetch(`/api/articles/mark-read-sync?id=${article.value.id}&read=true`, { method: 'POST' });
+      fetch(`/api/articles/read?id=${article.value.id}&read=true`, { method: 'POST' });
     }
 
     if (action === 'showContent') {
@@ -598,10 +597,10 @@ export function useArticleDetail() {
         await fetchArticleContent();
       }
       showContent.value = true;
-      userPreferredMode.value = 'rendered';
+      // Don't set userPreferredMode for context menu actions
     } else if (action === 'showOriginal') {
       showContent.value = false;
-      userPreferredMode.value = 'original';
+      // Don't set userPreferredMode for context menu actions
     }
   }
 
