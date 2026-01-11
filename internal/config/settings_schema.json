@@ -542,6 +542,13 @@
       "category": "general",
       "encrypted": false,
       "frontend_key": "shortcutsEnabled"
+    },
+    "compact_mode": {
+      "type": "bool",
+      "default": false,
+      "category": "reading",
+      "encrypted": false,
+      "frontend_key": "compactMode"
     }
   }
 }

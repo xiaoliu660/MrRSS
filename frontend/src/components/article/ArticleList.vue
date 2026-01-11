@@ -21,10 +21,13 @@ import { useArticleTranslation } from '@/composables/article/useArticleTranslati
 import { useArticleFilter } from '@/composables/article/useArticleFilter';
 import { useArticleActions } from '@/composables/article/useArticleActions';
 import { useShowPreviewImages } from '@/composables/ui/useShowPreviewImages';
+import { useSettings } from '@/composables/core/useSettings';
+import { parseSettingsData } from '@/composables/core/useSettings.generated';
 import type { Article } from '@/types/models';
 
 const store = useAppStore();
 const { t } = useI18n();
+const { settings } = useSettings();
 
 const listRef: Ref<HTMLDivElement | null> = ref(null);
 const defaultViewMode = ref<'original' | 'rendered'>('original');
@@ -128,6 +131,10 @@ onMounted(async () => {
     'show-preview-images-changed',
     onShowPreviewImagesChanged as EventListener
   );
+  // Listen for compact mode changes
+  window.addEventListener('compact-mode-changed', onCompactModeChanged as EventListener);
+  // Listen for settings loaded event (from App.vue on startup)
+  window.addEventListener('settings-loaded', onSettingsLoaded as EventListener);
   // Listen for refresh articles events
   window.addEventListener('refresh-articles', onRefreshArticles);
   // Listen for toggle filter events (from keyboard shortcut)
@@ -208,6 +215,8 @@ onBeforeUnmount(() => {
     'show-preview-images-changed',
     onShowPreviewImagesChanged as EventListener
   );
+  window.removeEventListener('compact-mode-changed', onCompactModeChanged as EventListener);
+  window.removeEventListener('settings-loaded', onSettingsLoaded as EventListener);
   window.removeEventListener('refresh-articles', onRefreshArticles);
   window.removeEventListener('toggle-filter', onToggleFilter);
 });
@@ -243,6 +252,27 @@ function onShowPreviewImagesChanged(e: Event): void {
   const customEvent = e as CustomEvent<{ value: boolean }>;
   const { updateValue } = useShowPreviewImages();
   updateValue(customEvent.detail.value);
+}
+
+function onCompactModeChanged(): void {
+  // Force a re-fetch of settings to update the reactive settings object
+  fetch('/api/settings')
+    .then((res) => res.json())
+    .then((data) => {
+      settings.value = parseSettingsData(data);
+    })
+    .catch((err) => console.error('Error refreshing settings after compact mode change:', err));
+}
+
+function onSettingsLoaded(): void {
+  // Load initial settings when App.vue has loaded them
+  fetch('/api/settings')
+    .then((res) => res.json())
+    .then((data) => {
+      settings.value = parseSettingsData(data);
+      console.log('ArticleList settings loaded on startup:', settings.value.compact_mode);
+    })
+    .catch((err) => console.error('Error loading initial settings in ArticleList:', err));
 }
 
 function onRefreshArticles(): void {

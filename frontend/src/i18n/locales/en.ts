@@ -737,6 +737,8 @@ const en: TranslationMessages = {
   showAdvancedSettings: 'Show Advanced Settings',
   showArticlePreviewImages: 'Show Preview Images',
   showArticlePreviewImagesDesc: 'Display preview images in the article list',
+  compactMode: 'Compact Mode',
+  compactModeDesc: 'Use compact layout in article list',
   showHiddenArticles: 'Show Hidden Articles',
   showHiddenArticlesDesc: 'Show articles hidden in the All Articles list',
   showOriginal: 'Original',

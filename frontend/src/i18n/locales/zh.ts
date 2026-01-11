@@ -730,6 +730,8 @@ const zh: TranslationMessages = {
   showAdvancedSettings: '显示高级设置',
   showArticlePreviewImages: '显示预览图片',
   showArticlePreviewImagesDesc: '在文章列表中显示预览图片',
+  compactMode: '紧凑模式',
+  compactModeDesc: '在文章列表中使用紧凑布局',
   showHiddenArticles: '显示隐藏文章',
   showHiddenArticlesDesc: '显示在所有文章列表中被隐藏的文章',
   showOriginal: '原文',

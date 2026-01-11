@@ -62,6 +62,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		baiduAppId := safeGetSetting(h, "baidu_app_id")
 		baiduSecretKey := safeGetEncryptedSetting(h, "baidu_secret_key")
 		closeToTray := safeGetSetting(h, "close_to_tray")
+		compactMode := safeGetSetting(h, "compact_mode")
 		customCssFile := safeGetSetting(h, "custom_css_file")
 		deeplApiKey := safeGetEncryptedSetting(h, "deepl_api_key")
 		deeplEndpoint := safeGetSetting(h, "deepl_endpoint")
@@ -140,6 +141,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			"baidu_app_id":                baiduAppId,
 			"baidu_secret_key":            baiduSecretKey,
 			"close_to_tray":               closeToTray,
+			"compact_mode":                compactMode,
 			"custom_css_file":             customCssFile,
 			"deepl_api_key":               deeplApiKey,
 			"deepl_endpoint":              deeplEndpoint,
@@ -220,6 +222,7 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			BaiduAppId               string `json:"baidu_app_id"`
 			BaiduSecretKey           string `json:"baidu_secret_key"`
 			CloseToTray              string `json:"close_to_tray"`
+			CompactMode              string `json:"compact_mode"`
 			CustomCssFile            string `json:"custom_css_file"`
 			DeeplAPIKey              string `json:"deepl_api_key"`
 			DeeplEndpoint            string `json:"deepl_endpoint"`
@@ -349,6 +352,10 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if req.CloseToTray != "" {
 			h.DB.SetSetting("close_to_tray", req.CloseToTray)
+		}
+
+		if req.CompactMode != "" {
+			h.DB.SetSetting("compact_mode", req.CompactMode)
 		}
 
 		if req.CustomCssFile != "" {

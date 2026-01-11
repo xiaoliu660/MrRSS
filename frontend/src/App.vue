@@ -43,8 +43,14 @@ const { confirmDialog, inputDialog, toasts, removeToast, installGlobalHandlers }
 
 const { contextMenu, openContextMenu, handleContextMenuAction } = useContextMenu();
 
-const { sidebarWidth, articleListWidth, startResizeSidebar, startResizeArticleList } =
-  useResizablePanels();
+const {
+  sidebarWidth,
+  articleListWidth,
+  startResizeSidebar,
+  startResizeArticleList,
+  setArticleListWidth,
+  setCompactMode,
+} = useResizablePanels();
 
 // Use app updates composable
 const { updateInfo, checkForUpdates, downloadAndInstallUpdate } = useAppUpdates();
@@ -85,6 +91,15 @@ onMounted(async () => {
   try {
     const res = await fetch('/api/settings');
     const data = await res.json();
+
+    // Set initial article list width based on compact mode setting
+    const isCompactMode = data.compact_mode === true || data.compact_mode === 'true';
+    // First set the compact mode, then set the width (order matters)
+    setCompactMode(isCompactMode);
+    setArticleListWidth(isCompactMode ? 600 : 400);
+
+    // Notify all components that settings have been loaded
+    window.dispatchEvent(new CustomEvent('settings-loaded'));
 
     // Apply saved theme preference (already applied in main.ts, but ensure it's set)
     if (data.theme) {
@@ -200,6 +215,14 @@ onMounted(async () => {
     const customEvent = e as CustomEvent;
     feedToDiscover.value = customEvent.detail;
     showDiscoverBlogs.value = true;
+  });
+
+  // Listen for compact mode changes to update article list width
+  window.addEventListener('compact-mode-changed', (e: Event) => {
+    const customEvent = e as CustomEvent<{ enabled: boolean }>;
+    const enabled = customEvent.detail.enabled;
+    setCompactMode(enabled);
+    setArticleListWidth(enabled ? 600 : 400); // Always update width when user changes setting
   });
 
   // Global Context Menu Event Listener

@@ -15,6 +15,7 @@ import {
   PhTrash,
   PhCheck,
   PhBookOpen,
+  PhListDashes,
 } from '@phosphor-icons/vue';
 import type { SettingsData } from '@/types/settings';
 
@@ -187,6 +188,32 @@ const handleDeleteCSS = async () => {
             emit('update:settings', {
               ...settings,
               show_article_preview_images: (e.target as HTMLInputElement).checked,
+            })
+        "
+      />
+    </div>
+
+    <div class="setting-item mt-2 sm:mt-3">
+      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
+        <PhListDashes :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
+        <div class="flex-1 min-w-0">
+          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
+            {{ t('compactMode') }}
+          </div>
+          <div class="text-xs text-text-secondary hidden sm:block">
+            {{ t('compactModeDesc') }}
+          </div>
+        </div>
+      </div>
+      <input
+        :checked="settings.compact_mode"
+        type="checkbox"
+        class="toggle"
+        @change="
+          (e) =>
+            emit('update:settings', {
+              ...settings,
+              compact_mode: (e.target as HTMLInputElement).checked,
             })
         "
       />
