@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Supported compact mode for article list to reduce visual clutter. (#403)
 
+### Changed
+
+- All the documents will now be opened in the default browser, and multi-language support has been added. (#458)
+
 ## [1.3.15] - 2026-01-11
 
 ### Changed
