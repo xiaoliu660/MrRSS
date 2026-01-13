@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed an issue where article list will not scroll automatically when switching articles. (#451)
 - Fixed some minor style issues. (#452, #456, #453)
 - Fixed an issue where the future publish time of some articles can not be displayed correctly.
+- Fixed an issue where the summary can not be generated according to the language setting. (#480)
 
 ### Refactored
 
