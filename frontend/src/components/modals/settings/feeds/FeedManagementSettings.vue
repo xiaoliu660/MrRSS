@@ -15,6 +15,7 @@ import {
   PhEnvelope,
   PhCheckCircle,
   PhXCircle,
+  PhImage,
 } from '@phosphor-icons/vue';
 import type { Feed } from '@/types/models';
 import { formatRelativeTime } from '@/utils/date';
@@ -361,6 +362,13 @@ async function openScriptsFolder() {
                 class="w-3.5 h-3.5 shrink-0 inline"
                 :title="t('rsshubFeed')"
                 alt="RSSHub"
+              />
+              <!-- Image mode indicator -->
+              <PhImage
+                v-if="feed.is_image_mode"
+                :size="12"
+                class="text-accent shrink-0 inline"
+                :title="t('imageMode')"
               />
               <PhEyeSlash
                 v-if="feed.hide_from_timeline"
