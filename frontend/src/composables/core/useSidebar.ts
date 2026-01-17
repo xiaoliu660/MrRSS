@@ -26,12 +26,6 @@ export function useSidebar() {
     savedCategories ? new Set(JSON.parse(savedCategories)) : new Set()
   );
 
-  // Load saved pinned categories from localStorage
-  const savedPinnedCategories = localStorage.getItem('pinnedCategories');
-  const pinnedCategories: Ref<Set<string>> = ref(
-    savedPinnedCategories ? new Set(JSON.parse(savedPinnedCategories)) : new Set()
-  );
-
   const searchQuery: Ref<string> = ref('');
 
   // Build category tree with search filtering and filter-specific filtering
@@ -166,20 +160,6 @@ export function useSidebar() {
 
   function isCategoryOpen(path: string): boolean {
     return openCategories.value.has(path);
-  }
-
-  function togglePinCategory(path: string): void {
-    if (pinnedCategories.value.has(path)) {
-      pinnedCategories.value.delete(path);
-    } else {
-      pinnedCategories.value.add(path);
-    }
-    // Save to localStorage
-    localStorage.setItem('pinnedCategories', JSON.stringify([...pinnedCategories.value]));
-  }
-
-  function isCategoryPinned(path: string): boolean {
-    return pinnedCategories.value.has(path);
   }
 
   // Feed actions
@@ -331,12 +311,6 @@ export function useSidebar() {
       });
       store.fetchUnreadCounts();
       window.showToast(t('markedAllAsRead'), 'success');
-    } else if (action === 'togglePin') {
-      togglePinCategory(categoryName);
-      window.showToast(
-        isCategoryPinned(categoryName) ? t('categoryPinned') : t('categoryUnpinned'),
-        'success'
-      );
     } else if (action === 'rename') {
       const newName = await window.showInput({
         title: t('renameCategory'),
@@ -380,19 +354,11 @@ export function useSidebar() {
     e.preventDefault();
     e.stopPropagation();
 
-    const isPinned = isCategoryPinned(categoryName);
-
     const items: Array<{ label?: string; action?: string; icon?: string; separator?: boolean }> = [
       { label: t('markAllAsReadFeed'), action: 'markAllRead', icon: 'ph-check-circle' },
     ];
 
     if (categoryName !== 'uncategorized') {
-      items.push({ separator: true });
-      items.push({
-        label: isPinned ? t('unpinCategory') : t('pinCategory'),
-        action: 'togglePin',
-        icon: isPinned ? 'ph-push-pin-slash' : 'ph-push-pin',
-      });
       items.push({ separator: true });
       items.push({ label: t('renameCategory'), action: 'rename', icon: 'ph-pencil' });
     }
@@ -414,12 +380,9 @@ export function useSidebar() {
     tree,
     categoryUnreadCounts,
     openCategories,
-    pinnedCategories,
     searchQuery,
     toggleCategory,
     isCategoryOpen,
-    togglePinCategory,
-    isCategoryPinned,
     onFeedContextMenu,
     onCategoryContextMenu,
   };
