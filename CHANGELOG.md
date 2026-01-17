@@ -5,6 +5,17 @@ All notable changes to MrRSS will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Supported small thumbnail images in image gallery view for better navigation. (#495)
+- Supported displaying image filtered by category in image gallery view. (#487, #490)
+
+### Fixed
+
+- Fixed minor styling issues. (#492)
+
 ## [1.3.16] - 2026-01-15
 
 ### Added

@@ -54,6 +54,7 @@ const contextMenu = ref<{ show: boolean; x: number; y: number; article: Article 
 });
 const imageCountCache = ref<Map<number, number>>(new Map());
 const showTextOverlay = ref(true);
+const thumbnailStripRef = ref<HTMLElement | null>(null);
 
 // Load showTextOverlay preference from localStorage
 const savedShowTextOverlay = localStorage.getItem('imageGalleryShowTextOverlay');
@@ -69,6 +70,9 @@ watch(showTextOverlay, (newValue) => {
 // Compute which feed ID to fetch (if viewing a specific feed)
 const feedId = computed(() => store.currentFeedId);
 
+// Compute which category to fetch (if viewing a specific category)
+const category = computed(() => store.currentCategory);
+
 // Fetch image gallery articles
 async function fetchImages(loadMore = false) {
   if (isLoading.value) return;
@@ -78,6 +82,8 @@ async function fetchImages(loadMore = false) {
     let url = `/api/articles/images?page=${page.value}&limit=${ITEMS_PER_PAGE}`;
     if (feedId.value) {
       url += `&feed_id=${feedId.value}`;
+    } else if (category.value) {
+      url += `&category=${encodeURIComponent(category.value)}`;
     }
 
     const res = await fetch(url);
@@ -394,6 +400,35 @@ function handleKeyDown(e: KeyboardEvent) {
   }
 }
 
+// Handle mouse wheel on thumbnail strip for horizontal scrolling
+function handleThumbnailWheel(e: WheelEvent) {
+  if (!thumbnailStripRef.value) return;
+
+  // Prevent vertical scrolling
+  e.preventDefault();
+
+  // Scroll horizontally with smooth behavior
+  thumbnailStripRef.value.scrollBy({
+    left: e.deltaY,
+    behavior: 'smooth',
+  });
+}
+
+// Handle mouse wheel on main image area for navigation
+function handleImageWheel(e: WheelEvent) {
+  if (allImages.value.length <= 1) return;
+
+  // Prevent default scrolling
+  e.preventDefault();
+
+  // Determine direction and navigate
+  if (e.deltaY > 0 || e.deltaX > 0) {
+    nextImage();
+  } else if (e.deltaY < 0 || e.deltaX < 0) {
+    previousImage();
+  }
+}
+
 // Watch for articles changes and rearrange
 watch(articles, () => {
   nextTick(() => {
@@ -404,6 +439,23 @@ watch(articles, () => {
 // Watch for feed ID changes and refetch
 watch(feedId, async () => {
   // Close image viewer when switching feeds
+  showImageViewer.value = false;
+  selectedArticle.value = null;
+  allImages.value = [];
+  currentImageIndex.value = 0;
+
+  page.value = 1;
+  articles.value = [];
+  hasMore.value = true;
+  await fetchImages();
+  // Recalculate columns after fetching new articles
+  await nextTick();
+  calculateColumns();
+});
+
+// Watch for category changes and refetch
+watch(category, async () => {
+  // Close image viewer when switching categories
   showImageViewer.value = false;
   selectedArticle.value = null;
   allImages.value = [];
@@ -451,13 +503,10 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="flex flex-col flex-1 h-full overflow-y-auto bg-bg-primary scroll-smooth"
-  >
+  <div class="flex flex-col flex-1 h-full bg-bg-primary">
     <!-- Header -->
     <div
-      class="sticky top-0 z-10 bg-bg-primary border-b border-border p-2 sm:p-4 flex items-center gap-3"
+      class="flex-shrink-0 bg-bg-primary border-b border-border p-2 sm:p-4 flex items-center gap-3"
     >
       <button
         class="p-2 rounded-lg hover:bg-bg-tertiary text-text-primary transition-colors md:hidden"
@@ -472,7 +521,7 @@ onUnmounted(() => {
         </h1>
       </div>
       <button
-        class="p-2 rounded hover:bg-bg-tertiary text-text-primary transition-colors"
+        class="p-1 sm:p-1.5 rounded hover:bg-bg-tertiary text-text-primary transition-colors"
         :title="showTextOverlay ? t('hideText') : t('showText')"
         @click="showTextOverlay = !showTextOverlay"
       >
@@ -481,88 +530,95 @@ onUnmounted(() => {
       </button>
     </div>
 
-    <!-- Masonry Grid -->
-    <div v-if="articles.length > 0" class="p-4 flex gap-4">
-      <div v-for="(column, colIndex) in columns" :key="colIndex" class="flex-1 flex flex-col gap-4">
+    <!-- Scrollable content area -->
+    <div ref="containerRef" class="flex-1 overflow-y-scroll scroll-smooth">
+      <!-- Masonry Grid -->
+      <div v-if="articles.length > 0" class="p-4 flex gap-4">
         <div
-          v-for="article in column"
-          :key="article.id"
-          class="cursor-pointer group"
-          @click="openImage(article)"
-          @contextmenu="handleContextMenu($event, article)"
+          v-for="(column, colIndex) in columns"
+          :key="colIndex"
+          class="flex-1 flex flex-col gap-4"
         >
           <div
-            class="relative overflow-hidden rounded-lg bg-bg-secondary transition-transform duration-200 hover:scale-[1.02]"
+            v-for="article in column"
+            :key="article.id"
+            class="cursor-pointer group"
+            @click="openImage(article)"
+            @contextmenu="handleContextMenu($event, article)"
           >
-            <img
-              :src="article.image_url"
-              :alt="article.title"
-              class="w-full h-auto block"
-              loading="lazy"
-            />
-            <!-- Image count indicator -->
             <div
-              v-if="getImageCount(article) > 1"
-              class="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm z-10 flex items-center gap-1"
+              class="relative overflow-hidden rounded-lg bg-bg-secondary transition-transform duration-200 hover:scale-[1.02]"
             >
-              <PhImage :size="14" />
-              <span class="ml-1">{{ getImageCount(article) }}</span>
-            </div>
-            <div
-              class="absolute inset-0 bg-black/0 hover:bg-black/30 transition-all duration-200 flex items-start justify-end p-2"
-            >
-              <button
-                class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 rounded-full p-1.5 hover:bg-black/70"
-                @click="toggleFavorite(article, $event)"
+              <img
+                :src="article.image_url"
+                :alt="article.title"
+                class="w-full h-auto block"
+                loading="lazy"
+              />
+              <!-- Image count indicator -->
+              <div
+                v-if="getImageCount(article) > 1"
+                class="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-black/60 text-white text-xs font-semibold backdrop-blur-sm z-10 flex items-center gap-1"
               >
-                <PhHeart
-                  :size="20"
-                  :weight="article.is_favorite ? 'fill' : 'regular'"
-                  :class="article.is_favorite ? 'text-red-500' : 'text-white'"
-                />
-              </button>
+                <PhImage :size="14" />
+                <span class="ml-1">{{ getImageCount(article) }}</span>
+              </div>
+              <div
+                class="absolute inset-0 bg-black/0 hover:bg-black/30 transition-all duration-200 flex items-start justify-end p-2"
+              >
+                <button
+                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/50 rounded-full p-1.5 hover:bg-black/70"
+                  @click="toggleFavorite(article, $event)"
+                >
+                  <PhHeart
+                    :size="20"
+                    :weight="article.is_favorite ? 'fill' : 'regular'"
+                    :class="article.is_favorite ? 'text-red-500' : 'text-white'"
+                  />
+                </button>
+              </div>
+              <!-- Hover overlay when text is hidden -->
+              <div
+                v-if="!showTextOverlay"
+                class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              >
+                <p class="text-sm font-medium text-white line-clamp-2 mb-1">
+                  {{ article.title }}
+                </p>
+                <div class="flex items-center justify-between text-xs text-white/80">
+                  <span class="truncate flex-1">{{ article.feed_title }}</span>
+                  <span class="ml-2 shrink-0">{{ formatDate(article.published_at) }}</span>
+                </div>
+              </div>
             </div>
-            <!-- Hover overlay when text is hidden -->
-            <div
-              v-if="!showTextOverlay"
-              class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            >
-              <p class="text-sm font-medium text-white line-clamp-2 mb-1">
+            <div v-if="showTextOverlay" class="p-2">
+              <p class="text-sm font-medium text-text-primary line-clamp-2 mb-1">
                 {{ article.title }}
               </p>
-              <div class="flex items-center justify-between text-xs text-white/80">
+              <div class="flex items-center justify-between text-xs text-text-secondary">
                 <span class="truncate flex-1">{{ article.feed_title }}</span>
                 <span class="ml-2 shrink-0">{{ formatDate(article.published_at) }}</span>
               </div>
             </div>
           </div>
-          <div v-if="showTextOverlay" class="p-2">
-            <p class="text-sm font-medium text-text-primary line-clamp-2 mb-1">
-              {{ article.title }}
-            </p>
-            <div class="flex items-center justify-between text-xs text-text-secondary">
-              <span class="truncate flex-1">{{ article.feed_title }}</span>
-              <span class="ml-2 shrink-0">{{ formatDate(article.published_at) }}</span>
-            </div>
-          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Empty State -->
-    <div
-      v-else-if="!isLoading"
-      class="flex flex-col items-center justify-center h-full w-full gap-4"
-    >
-      <PhImage :size="64" class="text-text-secondary opacity-50" />
-      <p class="text-text-secondary">{{ t('noArticles') }}</p>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div v-if="isLoading" class="flex justify-center py-8">
+      <!-- Empty State -->
       <div
-        class="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"
-      ></div>
+        v-else-if="!isLoading"
+        class="flex flex-col items-center justify-center h-full w-full gap-4"
+      >
+        <PhImage :size="64" class="text-text-secondary opacity-50" />
+        <p class="text-text-secondary">{{ t('noArticles') }}</p>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div v-if="isLoading" class="flex justify-center py-8">
+        <div
+          class="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"
+        ></div>
+      </div>
     </div>
 
     <!-- Image Viewer Modal -->
@@ -593,10 +649,10 @@ onUnmounted(() => {
         {{ currentImageIndex + 1 }} / {{ allImages.length }}
       </div>
 
-      <!-- Navigation buttons (when multiple images) -->
+      <!-- Navigation buttons (when multiple images) - positioned relative to image container -->
       <template v-if="allImages.length > 1">
         <button
-          class="absolute top-1/2 left-4 -translate-y-1/2 w-12 h-12 rounded text-white text-4xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-10"
+          class="absolute top-[calc(50%-64px-8px)] left-4 -translate-y-1/2 w-12 h-12 rounded text-white text-4xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-10"
           style="
             text-shadow:
               0 1px 3px rgba(0, 0, 0, 0.8),
@@ -607,7 +663,7 @@ onUnmounted(() => {
           ‹
         </button>
         <button
-          class="absolute top-1/2 right-4 -translate-y-1/2 w-12 h-12 rounded text-white text-4xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-10"
+          class="absolute top-[calc(50%-64px-8px)] right-4 -translate-y-1/2 w-12 h-12 rounded text-white text-4xl flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95 z-10"
           style="
             text-shadow:
               0 1px 3px rgba(0, 0, 0, 0.8),
@@ -619,25 +675,66 @@ onUnmounted(() => {
         </button>
       </template>
 
-      <div class="flex-1 flex items-center justify-center min-h-0 relative" @click.stop>
-        <!-- Loading placeholder -->
+      <div class="flex-1 flex flex-col items-center justify-center min-h-0 relative" @click.stop>
         <div
-          v-if="currentImageLoading"
-          class="absolute inset-0 flex items-center justify-center z-10"
+          class="flex-1 flex items-center justify-center w-full min-h-0"
+          @wheel="handleImageWheel"
         >
+          <!-- Loading placeholder -->
           <div
-            class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"
-          ></div>
+            v-if="currentImageLoading"
+            class="absolute inset-0 flex items-center justify-center z-10"
+          >
+            <div
+              class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"
+            ></div>
+          </div>
+
+          <img
+            :src="allImages[currentImageIndex] || selectedArticle.image_url"
+            :alt="selectedArticle.title"
+            class="h-full w-full object-contain"
+            :class="{ 'opacity-0': currentImageLoading, 'transition-opacity duration-200': true }"
+            @load="handleImageLoad"
+            @error="handleImageError"
+          />
         </div>
 
-        <img
-          :src="allImages[currentImageIndex] || selectedArticle.image_url"
-          :alt="selectedArticle.title"
-          class="h-full w-full object-contain"
-          :class="{ 'opacity-0': currentImageLoading, 'transition-opacity duration-200': true }"
-          @load="handleImageLoad"
-          @error="handleImageError"
-        />
+        <!-- Thumbnail strip (shown when there are multiple images) -->
+        <div v-if="allImages.length > 1" class="w-full mt-3 px-2 shrink-0" @click.stop>
+          <div
+            ref="thumbnailStripRef"
+            class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide scroll-smooth"
+            @wheel="handleThumbnailWheel"
+          >
+            <button
+              v-for="(image, index) in allImages"
+              :key="index"
+              class="relative shrink-0 w-16 h-16 rounded overflow-hidden border-2 transition-all duration-200 hover:scale-105 active:scale-95"
+              :class="
+                index === currentImageIndex
+                  ? 'border-accent shadow-lg shadow-accent/30'
+                  : 'border-white/20 hover:border-white/40'
+              "
+              @click="
+                currentImageIndex = index;
+                currentImageLoading = true;
+              "
+            >
+              <img
+                :src="image"
+                :alt="`${t('image')} ${index + 1}`"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+              <!-- Active indicator -->
+              <div
+                v-if="index === currentImageIndex"
+                class="absolute inset-0 bg-accent/20 pointer-events-none"
+              ></div>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div class="bg-bg-primary px-3 py-3 rounded-md shrink-0" @click.stop>
@@ -695,5 +792,15 @@ onUnmounted(() => {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 </style>

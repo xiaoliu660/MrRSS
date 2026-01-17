@@ -143,6 +143,10 @@ const hasChildren = computed(() => {
 
 // Get the full category path for this node
 const fullPath = computed(() => {
+  // For uncategorized category, use empty string to match database (feeds with no category)
+  if (props.isUncategorized) {
+    return '';
+  }
   return props.categoryPath ? `${props.categoryPath}/${props.name}` : props.name;
 });
 

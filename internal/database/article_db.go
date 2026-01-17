@@ -115,11 +115,16 @@ func (db *DB) GetArticles(filter string, feedID int64, category string, showHidd
 		args = append(args, feedID)
 	}
 
-	if category != "" {
+	if category == "\x00" {
+		// Special value "\x00" means explicit uncategorized filtering
+		whereClauses = append(whereClauses, "(f.category IS NULL OR f.category = '')")
+	} else if category != "" {
 		// Simple prefix match for category hierarchy
 		whereClauses = append(whereClauses, "(f.category = ? OR f.category LIKE ?)")
 		args = append(args, category, category+"/%")
 	}
+	// Note: When category is empty string, it means no category filter was provided,
+	// so we should not filter by category at all (show all articles from all categories).
 
 	query := baseQuery
 	if len(whereClauses) > 0 {
@@ -542,8 +547,9 @@ func (db *DB) ClearReadLater() error {
 
 // GetImageGalleryArticles retrieves articles from image mode feeds with pagination.
 // If feedID is provided, it gets articles only from that feed (assuming it's an image mode feed).
+// If category is provided, it gets articles from all image mode feeds in that category.
 // Otherwise, it gets articles from all image mode feeds.
-func (db *DB) GetImageGalleryArticles(feedID int64, showHidden bool, limit, offset int) ([]models.Article, error) {
+func (db *DB) GetImageGalleryArticles(feedID int64, category string, showHidden bool, limit, offset int) ([]models.Article, error) {
 	db.WaitForReady()
 	baseQuery := `
 		SELECT a.id, a.feed_id, a.title, a.url, a.image_url, a.audio_url, a.video_url, a.published_at, a.is_read, a.is_favorite, a.is_hidden, a.is_read_later, a.translated_title, a.summary, f.title
@@ -564,7 +570,16 @@ func (db *DB) GetImageGalleryArticles(feedID int64, showHidden bool, limit, offs
 	if feedID > 0 {
 		baseQuery += " AND a.feed_id = ?"
 		args = append(args, feedID)
+	} else if category == "\x00" {
+		// Special value "\x00" means explicit uncategorized filtering
+		baseQuery += " AND (f.category IS NULL OR f.category = '')"
+	} else if category != "" {
+		// For categories, use prefix match to support nested categories
+		baseQuery += " AND (f.category = ? OR f.category LIKE ?)"
+		args = append(args, category, category+"/%")
 	}
+	// Note: When category is empty string, it means no category filter was provided,
+	// so we should not filter by category at all (show all image mode articles from all categories).
 
 	baseQuery += " ORDER BY a.published_at DESC LIMIT ? OFFSET ?"
 	args = append(args, limit, offset)

@@ -448,7 +448,7 @@ function handleTogglePin() {
                 checkIsCategoryOpen('uncategorized') ||
                 (filteredTree.uncategorized.length === 0 && isDragging)
               "
-              :is-active="false"
+              :is-active="store.currentCategory === ''"
               :is-uncategorized="true"
               :unread-count="categoryUnreadCounts['uncategorized'] || 0"
               :current-feed-id="store.currentFeedId"
@@ -459,6 +459,7 @@ function handleTogglePin() {
               :dragging-feed-id="draggingFeedId"
               :is-category-open="checkIsCategoryOpen"
               @toggle="toggleCategory('uncategorized')"
+              @select-category="(path: string) => handleSelectCategory(path)"
               @select-feed="(feedId: number) => handleSelectFeed(feedId)"
               @category-context-menu="(e: MouseEvent) => onCategoryContextMenu(e, 'uncategorized')"
               @feed-context-menu="onFeedContextMenu"
