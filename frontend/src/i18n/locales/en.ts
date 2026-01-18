@@ -281,6 +281,7 @@ const en: TranslationMessages = {
   downloadAudio: 'Download Audio File',
   downloadComplete: 'Download complete',
   downloadFailed: 'Download failed',
+  copyImage: 'Copy Image',
   downloadImage: 'Download Image',
   downloading: 'Downloading...',
   downloadUpdate: 'Download Update',

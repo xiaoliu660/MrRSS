@@ -277,6 +277,7 @@ const zh: TranslationMessages = {
   downloadAudio: '下载音频文件',
   downloadComplete: '下载完成',
   downloadFailed: '下载失败',
+  copyImage: '复制图片',
   downloadImage: '下载图片',
   downloading: '下载中...',
   downloadUpdate: '下载更新',

@@ -193,6 +193,7 @@ export interface TranslationMessages {
   downloadAudio: string;
   downloadComplete: string;
   downloadFailed: string;
+  copyImage: string;
   downloadImage: string;
   downloading: string;
   downloadUpdate: string;

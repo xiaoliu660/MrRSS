@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supported small thumbnail images in image gallery view for better navigation. (#495)
 - Supported displaying image filtered by category in image gallery view. (#487, #490)
 - Supported translating from traditional Chinese to simplified Chinese and vice versa. (#511)
+- Supported copying images to clipboard. (#515)
 
 ### Changed
 
@@ -21,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed minor styling issues. (#492, #493, #494, #496, #503, #505, #506, #510)
+- Fixed minor styling issues. (#492, #493, #494, #496, #503, #505, #506, #510, #516)
 - Fixed the issue where pure text can not be translated correctly. (#511, #514)
 
 ## [1.3.16] - 2026-01-15
