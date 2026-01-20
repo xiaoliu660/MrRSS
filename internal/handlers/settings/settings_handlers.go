@@ -62,6 +62,9 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		baiduSecretKey := safeGetEncryptedSetting(h, "baidu_secret_key")
 		closeToTray := safeGetSetting(h, "close_to_tray")
 		compactMode := safeGetSetting(h, "compact_mode")
+		contentFontFamily := safeGetSetting(h, "content_font_family")
+		contentFontSize := safeGetSetting(h, "content_font_size")
+		contentLineHeight := safeGetSetting(h, "content_line_height")
 		customCssFile := safeGetSetting(h, "custom_css_file")
 		customTranslationBodyTemplate := safeGetSetting(h, "custom_translation_body_template")
 		customTranslationEnabled := safeGetSetting(h, "custom_translation_enabled")
@@ -152,6 +155,9 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			"baidu_secret_key":                 baiduSecretKey,
 			"close_to_tray":                    closeToTray,
 			"compact_mode":                     compactMode,
+			"content_font_family":              contentFontFamily,
+			"content_font_size":                contentFontSize,
+			"content_line_height":              contentLineHeight,
 			"custom_css_file":                  customCssFile,
 			"custom_translation_body_template": customTranslationBodyTemplate,
 			"custom_translation_enabled":       customTranslationEnabled,
@@ -244,6 +250,9 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			BaiduSecretKey                string `json:"baidu_secret_key"`
 			CloseToTray                   string `json:"close_to_tray"`
 			CompactMode                   string `json:"compact_mode"`
+			ContentFontFamily             string `json:"content_font_family"`
+			ContentFontSize               string `json:"content_font_size"`
+			ContentLineHeight             string `json:"content_line_height"`
 			CustomCssFile                 string `json:"custom_css_file"`
 			CustomTranslationBodyTemplate string `json:"custom_translation_body_template"`
 			CustomTranslationEnabled      string `json:"custom_translation_enabled"`
@@ -385,6 +394,18 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 
 		if req.CompactMode != "" {
 			h.DB.SetSetting("compact_mode", req.CompactMode)
+		}
+
+		if req.ContentFontFamily != "" {
+			h.DB.SetSetting("content_font_family", req.ContentFontFamily)
+		}
+
+		if req.ContentFontSize != "" {
+			h.DB.SetSetting("content_font_size", req.ContentFontSize)
+		}
+
+		if req.ContentLineHeight != "" {
+			h.DB.SetSetting("content_line_height", req.ContentLineHeight)
 		}
 
 		if req.CustomCssFile != "" {
@@ -708,6 +729,9 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 		baiduSecretKey := safeGetEncryptedSetting(h, "baidu_secret_key")
 		closeToTray := safeGetSetting(h, "close_to_tray")
 		compactMode := safeGetSetting(h, "compact_mode")
+		contentFontFamily := safeGetSetting(h, "content_font_family")
+		contentFontSize := safeGetSetting(h, "content_font_size")
+		contentLineHeight := safeGetSetting(h, "content_line_height")
 		customCssFile := safeGetSetting(h, "custom_css_file")
 		customTranslationBodyTemplate := safeGetSetting(h, "custom_translation_body_template")
 		customTranslationEnabled := safeGetSetting(h, "custom_translation_enabled")
@@ -798,6 +822,9 @@ func HandleSettings(h *core.Handler, w http.ResponseWriter, r *http.Request) {
 			"baidu_secret_key":                 baiduSecretKey,
 			"close_to_tray":                    closeToTray,
 			"compact_mode":                     compactMode,
+			"content_font_family":              contentFontFamily,
+			"content_font_size":                contentFontSize,
+			"content_line_height":              contentLineHeight,
 			"custom_css_file":                  customCssFile,
 			"custom_translation_body_template": customTranslationBodyTemplate,
 			"custom_translation_enabled":       customTranslationEnabled,

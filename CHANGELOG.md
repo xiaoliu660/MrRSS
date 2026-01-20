@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Supported translating from traditional Chinese to simplified Chinese and vice versa. (#511)
 - Supported copying images to clipboard. (#515)
 - Improved image gallery mode styling and user experience. (#520)
+- Supported customizing typo style. (#488)
 
 ### Changed
 
