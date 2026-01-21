@@ -54,6 +54,8 @@ const iconMap: Record<string, string> = {
   'ph-eye-slash': 'PhEyeSlash',
   'ph-arrow-square-out': 'PhArrowSquareOut',
   'ph-clock-countdown': 'PhClockCountdown',
+  'ph-arrow-bend-right-up': 'PhArrowBendRightUp',
+  'ph-arrow-bend-left-down': 'PhArrowBendLeftDown',
   PhMagnifyingGlass: 'PhMagnifyingGlass',
   PhArrowsClockwise: 'PhArrowsClockwise',
   PhMagnifyingGlassPlus: 'PhMagnifyingGlassPlus',

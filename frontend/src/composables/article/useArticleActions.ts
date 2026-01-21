@@ -32,6 +32,16 @@ export function useArticleActions(
               icon: article.is_read ? 'ph-envelope' : 'ph-envelope-open',
             },
             {
+              label: t('markAboveAsRead'),
+              action: 'markAboveAsRead',
+              icon: 'ph-arrow-bend-right-up',
+            },
+            {
+              label: t('markBelowAsRead'),
+              action: 'markBelowAsRead',
+              icon: 'ph-arrow-bend-left-down',
+            },
+            {
               label: article.is_favorite ? t('removeFromFavorites') : t('addToFavorites'),
               action: 'toggleFavorite',
               icon: 'ph-star',
@@ -104,6 +114,46 @@ export function useArticleActions(
         console.error('Error toggling read status:', e);
         // Revert the state change on error
         article.is_read = !newState;
+        window.showToast(t('errorSavingSettings'), 'error');
+      }
+    } else if (action === 'markAboveAsRead' || action === 'markBelowAsRead') {
+      try {
+        const direction = action === 'markAboveAsRead' ? 'above' : 'below';
+
+        // Build query parameters
+        const params = new URLSearchParams({
+          id: article.id.toString(),
+          direction: direction,
+        });
+
+        // Add feed_id or category if we're in a filtered view
+        if (store.currentFeedId) {
+          params.append('feed_id', store.currentFeedId.toString());
+        } else if (store.currentCategory) {
+          params.append('category', store.currentCategory);
+        }
+
+        const res = await fetch(`/api/articles/mark-relative?${params.toString()}`, {
+          method: 'POST',
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to mark articles');
+        }
+
+        const data = await res.json();
+
+        // Refresh the article list to show updated read status
+        if (onReadStatusChange) {
+          onReadStatusChange();
+        }
+
+        // Refresh articles from server
+        await store.fetchArticles();
+
+        window.showToast(t('markedNArticlesAsRead', { count: data.count || 0 }), 'success');
+      } catch (e) {
+        console.error('Error marking articles as read:', e);
         window.showToast(t('errorSavingSettings'), 'error');
       }
     } else if (action === 'toggleFavorite') {

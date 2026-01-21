@@ -332,7 +332,13 @@ export interface TranslationMessages {
   markAsDiscovered: string;
   markAsRead: string;
   markAsUnread: string;
+  markAboveAsRead: string;
+  markBelowAsRead: string;
   markedAllAsRead: string;
+  markedNArticlesAsRead: string;
+  noArticlesToMark: string;
+  noUnreadArticles: string;
+  articleNotFound: string;
   maxArticleAge: string;
   maxArticleAgeDesc: string;
   maxCacheSize: string;

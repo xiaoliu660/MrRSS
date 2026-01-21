@@ -69,11 +69,6 @@ const {
   loadMoreFilteredArticles,
 } = useArticleFilter();
 
-const { showArticleContextMenu } = useArticleActions(t, defaultViewMode, async () => {
-  await store.fetchUnreadCounts();
-  await store.fetchFilterCounts();
-});
-
 // Computed filtered articles - optimized to avoid excessive recomputation
 const filteredArticles = computed(() => {
   let articles = activeFilters.value.length > 0 ? filteredArticlesFromServer.value : store.articles;
@@ -90,6 +85,11 @@ const filteredArticles = computed(() => {
   }
 
   return articles;
+});
+
+const { showArticleContextMenu } = useArticleActions(t, defaultViewMode, async () => {
+  await store.fetchUnreadCounts();
+  await store.fetchFilterCounts();
 });
 
 // Virtual rendering: only render visible articles + buffer

@@ -311,3 +311,79 @@ func HandleGetArticleContentCacheInfo(h *core.Handler, w http.ResponseWriter, r 
 		"cached_articles": count,
 	})
 }
+
+// HandleMarkRelativeToArticle marks articles as read relative to a reference article's published time.
+// @Summary      Mark articles relative to reference article
+// @Description  Marks articles as read based on their published time relative to a reference article (above = newer, below = older)
+// @Tags         articles
+// @Accept       json
+// @Produce      json
+// @Param        id        query     int64   true   "Reference article ID"
+// @Param        direction query     string true   "Direction: 'above' for newer articles, 'below' for older articles"  Enums(above, below)
+// @Param        feed_id   query     int64   false  "Optional: only mark articles from this feed"
+// @Param        category  query     string false  "Optional: only mark articles from this category"
+// @Success      200  {object}  map[string]interface{}  "Number of articles marked as read"
+// @Failure      400  {object}  map[string]string  "Bad request"
+// @Failure      404  {object}  map[string]string  "Article not found"
+// @Failure      500  {object}  map[string]string  "Internal server error"
+// @Router       /articles/mark-relative [post]
+func HandleMarkRelativeToArticle(h *core.Handler, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get reference article ID
+	idStr := r.URL.Query().Get("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil || id <= 0 {
+		http.Error(w, "Invalid article ID", http.StatusBadRequest)
+		return
+	}
+
+	// Get direction
+	direction := r.URL.Query().Get("direction")
+	if direction != "above" && direction != "below" {
+		http.Error(w, "Invalid direction. Must be 'above' or 'below'", http.StatusBadRequest)
+		return
+	}
+
+	// Get optional feed_id and category
+	var feedID int64
+	if feedIDStr := r.URL.Query().Get("feed_id"); feedIDStr != "" {
+		feedID, err = strconv.ParseInt(feedIDStr, 10, 64)
+		if err != nil {
+			http.Error(w, "Invalid feed_id parameter", http.StatusBadRequest)
+			return
+		}
+	}
+
+	category := r.URL.Query().Get("category")
+
+	// Get the reference article to find its published_at time
+	article, err := h.DB.GetArticleByID(id)
+	if err != nil {
+		log.Printf("[HandleMarkRelativeToArticle] Error getting article: %v", err)
+		http.Error(w, "Article not found", http.StatusNotFound)
+		return
+	}
+
+	if article == nil {
+		http.Error(w, "Article not found", http.StatusNotFound)
+		return
+	}
+
+	// Mark articles relative to this article's published time
+	count, err := h.DB.MarkArticlesRelativeToPublishedTime(article.PublishedAt, direction, feedID, category)
+	if err != nil {
+		log.Printf("[HandleMarkRelativeToArticle] Error marking articles: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"count":   count,
+	})
+}
