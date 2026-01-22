@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { PhPalette, PhMoon, PhTranslate, PhPower, PhArchiveTray } from '@phosphor-icons/vue';
+import { SettingGroup, SettingWithToggle, SettingWithSelect } from '@/components/settings';
 import type { SettingsData } from '@/types/settings';
 
 const { t } = useI18n();
@@ -9,149 +10,67 @@ interface Props {
   settings: SettingsData;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   'update:settings': [settings: SettingsData];
 }>();
+
+function updateSetting(key: keyof SettingsData, value: any) {
+  emit('update:settings', {
+    ...props.settings,
+    [key]: value,
+  });
+}
 </script>
 
 <template>
-  <div class="setting-group">
-    <label
-      class="font-semibold mb-2 sm:mb-3 text-text-secondary uppercase text-xs tracking-wider flex items-center gap-2"
-    >
-      <PhPalette :size="14" class="sm:w-4 sm:h-4" />
-      {{ t('setting.general.application') }}
-    </label>
+  <SettingGroup :icon="PhPalette" :title="t('setting.general.application')">
+    <SettingWithToggle
+      :icon="PhPower"
+      :title="t('setting.general.startupOnBoot')"
+      :description="t('setting.general.startupOnBootDesc')"
+      :model-value="settings.startup_on_boot"
+      @update:model-value="updateSetting('startup_on_boot', $event)"
+    />
 
-    <div class="setting-item">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhPower :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-            {{ t('setting.general.startupOnBoot') }}
-          </div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('setting.general.startupOnBootDesc') }}
-          </div>
-        </div>
-      </div>
-      <input
-        :checked="settings.startup_on_boot"
-        type="checkbox"
-        class="toggle"
-        @change="
-          (e) =>
-            emit('update:settings', {
-              ...settings,
-              startup_on_boot: (e.target as HTMLInputElement).checked,
-            })
-        "
-      />
-    </div>
+    <SettingWithToggle
+      :icon="PhArchiveTray"
+      :title="t('setting.general.closeToTray')"
+      :description="t('setting.general.closeToTrayDesc')"
+      :model-value="settings.close_to_tray"
+      @update:model-value="updateSetting('close_to_tray', $event)"
+    />
 
-    <div class="setting-item mt-2 sm:mt-3">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhArchiveTray :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-            {{ t('setting.general.closeToTray') }}
-          </div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('setting.general.closeToTrayDesc') }}
-          </div>
-        </div>
-      </div>
-      <input
-        :checked="settings.close_to_tray"
-        type="checkbox"
-        class="toggle"
-        @change="
-          (e) =>
-            emit('update:settings', {
-              ...settings,
-              close_to_tray: (e.target as HTMLInputElement).checked,
-            })
-        "
-      />
-    </div>
+    <SettingWithSelect
+      :icon="PhMoon"
+      :title="t('setting.general.theme')"
+      :description="t('setting.general.themeDesc')"
+      :model-value="settings.theme"
+      :options="[
+        { value: 'light', label: t('setting.general.light') },
+        { value: 'dark', label: t('setting.general.dark') },
+        { value: 'auto', label: t('setting.general.auto') },
+      ]"
+      width="md"
+      @update:model-value="updateSetting('theme', $event)"
+    />
 
-    <div class="setting-item mt-2 sm:mt-3">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhMoon :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-            {{ t('setting.general.theme') }}
-          </div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('setting.general.themeDesc') }}
-          </div>
-        </div>
-      </div>
-      <select
-        :value="settings.theme"
-        data-testid="theme-selector"
-        class="input-field w-24 sm:w-48 text-xs sm:text-sm"
-        @change="
-          (e) =>
-            emit('update:settings', { ...settings, theme: (e.target as HTMLSelectElement).value })
-        "
-      >
-        <option value="light">{{ t('setting.general.light') }}</option>
-        <option value="dark">{{ t('setting.general.dark') }}</option>
-        <option value="auto">{{ t('setting.general.auto') }}</option>
-      </select>
-    </div>
-
-    <div class="setting-item mt-2 sm:mt-3">
-      <div class="flex-1 flex items-center sm:items-start gap-2 sm:gap-3 min-w-0">
-        <PhTranslate :size="20" class="text-text-secondary mt-0.5 shrink-0 sm:w-6 sm:h-6" />
-        <div class="flex-1 min-w-0">
-          <div class="font-medium mb-0 sm:mb-1 text-sm sm:text-base">
-            {{ t('setting.general.language') }}
-          </div>
-          <div class="text-xs text-text-secondary hidden sm:block">
-            {{ t('setting.general.languageDesc') }}
-          </div>
-        </div>
-      </div>
-      <select
-        :value="settings.language"
-        data-testid="language-selector"
-        class="input-field w-24 sm:w-48 text-xs sm:text-sm"
-        @change="
-          (e) =>
-            emit('update:settings', {
-              ...settings,
-              language: (e.target as HTMLSelectElement).value,
-            })
-        "
-      >
-        <option value="en-US">{{ t('common.language.english') }}</option>
-        <option value="zh-CN">{{ t('common.language.chinese') }}</option>
-      </select>
-    </div>
-  </div>
+    <SettingWithSelect
+      :icon="PhTranslate"
+      :title="t('setting.general.language')"
+      :description="t('setting.general.languageDesc')"
+      :model-value="settings.language"
+      :options="[
+        { value: 'en-US', label: t('common.language.english') },
+        { value: 'zh-CN', label: t('common.language.chinese') },
+      ]"
+      width="md"
+      @update:model-value="updateSetting('language', $event)"
+    />
+  </SettingGroup>
 </template>
 
 <style scoped>
 @reference "../../../../style.css";
-
-.input-field {
-  @apply p-1.5 sm:p-2.5 border border-border rounded-md bg-bg-secondary text-text-primary focus:border-accent focus:outline-none transition-colors;
-}
-.toggle {
-  @apply w-10 h-5 appearance-none bg-bg-tertiary rounded-full relative cursor-pointer border border-border transition-colors checked:bg-accent checked:border-accent shrink-0;
-}
-.toggle::after {
-  content: '';
-  @apply absolute top-0.5 left-0.5 w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform;
-}
-.toggle:checked::after {
-  transform: translateX(20px);
-}
-.setting-item {
-  @apply flex items-center sm:items-start justify-between gap-2 sm:gap-4 p-2 sm:p-3 rounded-lg bg-bg-secondary border border-border;
-}
 </style>
