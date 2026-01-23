@@ -133,7 +133,7 @@ async function fetchImages(loadMore = false) {
     let url = `/api/articles/images?page=${page.value}&limit=${ITEMS_PER_PAGE}`;
     if (feedId.value) {
       url += `&feed_id=${feedId.value}`;
-    } else if (category.value) {
+    } else if (category.value !== null) {
       url += `&category=${encodeURIComponent(category.value)}`;
     }
 

@@ -171,7 +171,8 @@ export const useAppStore = defineStore('app', () => {
     let url = `/api/articles?page=${page.value}&limit=${limit}`;
     if (currentFilter.value) url += `&filter=${currentFilter.value}`;
     if (currentFeedId.value) url += `&feed_id=${currentFeedId.value}`;
-    if (currentCategory.value) url += `&category=${encodeURIComponent(currentCategory.value)}`;
+    if (currentCategory.value !== null)
+      url += `&category=${encodeURIComponent(currentCategory.value)}`;
 
     try {
       const res = await fetch(url);

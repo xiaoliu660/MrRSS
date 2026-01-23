@@ -771,6 +771,13 @@ function handleHoverMarkAsRead(articleId: number): void {
   }
 }
 
+/* Responsive width for article list on medium screens */
+@media (max-width: 1400px) and (min-width: 768px) {
+  .article-list {
+    width: min(var(--article-list-width, 400px), 320px) !important;
+  }
+}
+
 .filter-active {
   @apply text-accent border-accent;
   background-color: rgba(59, 130, 246, 0.1);

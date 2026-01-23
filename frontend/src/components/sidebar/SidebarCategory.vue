@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { PhFolder, PhFolderDashed, PhCaretDown } from '@phosphor-icons/vue';
 import { useI18n } from 'vue-i18n';
 import type { Feed } from '@/types/models';
@@ -7,6 +7,9 @@ import type { DropPreview } from '@/composables/ui/useDragDrop';
 import SidebarFeed from './SidebarFeed.vue';
 
 const { t } = useI18n();
+
+// Track click timeout to distinguish single click from double click
+const clickTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
 interface TreeNode {
   _feeds: Feed[];
@@ -169,6 +172,31 @@ const isFreshRSSCategory = computed(() => {
   // Only show FreshRSS icon if ALL feeds in this category are FreshRSS sources
   return props.feeds.every((feed) => feed.is_freshrss_source);
 });
+
+// Handle category header click - delays to distinguish from double click
+function handleCategoryClick() {
+  // Clear any existing timeout
+  if (clickTimeout.value) {
+    clearTimeout(clickTimeout.value);
+  }
+
+  // Set timeout to execute single-click action if no double-click follows
+  clickTimeout.value = setTimeout(() => {
+    emit('selectCategory', fullPath.value);
+    clickTimeout.value = null;
+  }, 250); // 250ms delay to wait for potential double-click
+}
+
+// Handle category header double-click - toggles expand/collapse
+function handleCategoryDoubleClick() {
+  // Clear the timeout to prevent single-click action from executing
+  if (clickTimeout.value) {
+    clearTimeout(clickTimeout.value);
+    clickTimeout.value = null;
+  }
+  // Toggle expand/collapse
+  emit('toggle');
+}
 </script>
 
 <template>
@@ -185,7 +213,8 @@ const isFreshRSSCategory = computed(() => {
   >
     <div
       :class="['category-header', isActive ? 'active' : '', props.compactMode ? 'compact' : '']"
-      @click="emit('selectCategory', fullPath)"
+      @click="handleCategoryClick"
+      @dblclick="handleCategoryDoubleClick"
       @contextmenu="(e) => emit('categoryContextMenu', e, fullPath)"
       @dragover="handleCategoryDragOver"
     >
@@ -302,7 +331,7 @@ const isFreshRSSCategory = computed(() => {
 @reference "../../style.css";
 
 .category-header {
-  @apply px-2 sm:px-3 py-1.5 sm:py-2 cursor-pointer font-semibold text-xs sm:text-sm text-text-secondary flex items-center justify-between rounded-md hover:bg-bg-tertiary hover:text-text-primary transition-colors;
+  @apply px-2 sm:px-3 py-1.5 sm:py-2 cursor-pointer font-semibold text-xs sm:text-sm text-text-secondary flex items-center justify-between hover:bg-bg-tertiary hover:text-text-primary transition-colors;
   @apply sticky z-10 bg-bg-secondary;
   top: -0.375rem; /* matches container's p-1.5 */
   margin-left: -0.375rem;

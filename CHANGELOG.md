@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed multiple minor styling issues. (#492, #493, #494, #496, #503, #505, #506, #510, #516, #517, #519, #521, #522, #523)
+- Fixed multiple minor styling issues. (#492, #493, #494, #496, #503, #505, #506, #510, #516, #517, #519, #521, #522, #523, #550)
 - Fixed an issue where plain text could not be translated correctly. (#511, #514)
 - Fixed an issue where the reading status did not update correctly in gallery mode.
 - Fixed an issue where translation occurred even when the feature was disabled. (#541)

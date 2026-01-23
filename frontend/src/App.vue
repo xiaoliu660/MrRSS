@@ -94,7 +94,7 @@ onMounted(async () => {
     const isCompactMode = data.compact_mode === true || data.compact_mode === 'true';
     // First set the compact mode, then set the width (order matters)
     setCompactMode(isCompactMode);
-    setArticleListWidth(isCompactMode ? 600 : 400);
+    setArticleListWidth(isCompactMode ? 500 : 350);
 
     // Notify all components that settings have been loaded
     window.dispatchEvent(new CustomEvent('settings-loaded'));

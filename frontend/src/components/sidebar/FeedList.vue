@@ -349,7 +349,7 @@ function handleTogglePin() {
   >
     <div
       v-if="isExpanded || isPinned"
-      class="w-[280px] min-w-[280px] max-w-[80vw] md:w-[280px] md:min-w-[280px] flex flex-col h-full flex-shrink-0 relative border-r border-border"
+      class="w-[280px] min-w-[280px] max-w-[80vw] md:w-[280px] md:min-w-[280px] flex flex-col h-full flex-shrink-0 relative border-r border-border feed-drawer-width"
       :class="[isPinned ? 'bg-bg-primary' : 'bg-bg-secondary shadow-2xl']"
     >
       <!-- Drawer Header -->
@@ -419,10 +419,7 @@ function handleTogglePin() {
           </div>
 
           <!-- Categories List -->
-          <div
-            class="flex-1 overflow-y-auto overflow-x-hidden"
-            :class="compactMode ? 'p-1' : 'p-2'"
-          >
+          <div class="categories-list flex-1 overflow-y-auto overflow-x-hidden">
             <SidebarCategory
               v-for="(data, name) in filteredTree.tree"
               :key="name"
@@ -501,3 +498,45 @@ function handleTogglePin() {
     </div>
   </Transition>
 </template>
+
+<style scoped>
+.categories-list {
+  /* Force scrollbar to always be visible */
+  scrollbar-gutter: stable;
+}
+
+.categories-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.categories-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.categories-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.categories-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Responsive width for feed drawer on medium screens */
+@media (max-width: 1400px) {
+  .feed-drawer-width {
+    width: 240px !important;
+    min-width: 240px !important;
+  }
+}
+</style>
+
+<style>
+.dark-mode .categories-list::-webkit-scrollbar-thumb {
+  background: #444;
+}
+
+.dark-mode .categories-list::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+</style>

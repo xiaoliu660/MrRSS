@@ -70,7 +70,7 @@ export function useResizablePanels() {
     const deltaX = currentMouseX - initialMouseX.value;
     const newWidth = initialArticleListWidth.value + deltaX;
     // In compact mode, allow wider range (300-800), in normal mode (250-600)
-    const minWidth = compactMode.value ? 300 : 250;
+    const minWidth = compactMode.value ? 300 : 280;
     const maxWidth = compactMode.value ? 800 : 600;
     if (newWidth >= minWidth && newWidth <= maxWidth) {
       articleListWidth.value = newWidth;
