@@ -319,22 +319,7 @@ const filteredTree = computed(() => {
 
 // Get drawer title
 const drawerTitle = computed(() => {
-  // Map filters to their display names
-  const filterMap: Record<string, string> = {
-    unread: t('sidebar.feedList.unread'),
-    favorites: t('sidebar.activity.favorites'),
-    readLater: t('sidebar.activity.readLater'),
-    imageGallery: t('sidebar.activity.imageGallery'),
-  };
-
-  const filterName = filterMap[store.currentFilter] || '';
-
-  // If there's a filter, return "{filter} - Feeds"
-  if (filterName) {
-    return t('sidebar.feedList.feedsWithFilter', { filter: filterName });
-  }
-
-  // For 'all' or any other case, just show "Feeds"
+  // Always show "Feeds" regardless of filter
   return t('sidebar.feedList.feeds');
 });
 
